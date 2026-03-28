@@ -24,3 +24,5 @@ module Briefer
     end
   end
 end
+
+require_relative "briefer/cli"
