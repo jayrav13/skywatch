@@ -33,6 +33,28 @@ RSpec.describe Briefer::CLI do
     end
   end
 
+  describe "taf command" do
+    let(:kack_taf_response) { [JSON.parse(File.read("spec/fixtures/tafs/kack.json"))] }
+
+    before do
+      stub_request(:get, "https://aviationweather.gov/api/data/taf")
+        .with(query: { ids: "KACK", format: "json" })
+        .to_return(status: 200, body: kack_taf_response.to_json, headers: { "Content-Type" => "application/json" })
+    end
+
+    it "outputs TAF in text format" do
+      output = capture_stdout { described_class.start(["taf", "KACK", "--format", "text"]) }
+      expect(output).to include("KACK")
+      expect(output).to include("TAF")
+    end
+
+    it "outputs TAF in JSON format" do
+      output = capture_stdout { described_class.start(["taf", "KACK", "--format", "json"]) }
+      parsed = JSON.parse(output)
+      expect(parsed.first["station_id"]).to eq("KACK")
+    end
+  end
+
   describe "categories command" do
     it "outputs flight categories in text format" do
       output = capture_stdout { described_class.start(["categories", "KCDW", "--format", "text"]) }

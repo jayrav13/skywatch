@@ -18,6 +18,20 @@ module Briefer
       exit 1
     end
 
+    desc "taf STATION [STATION...]", "Fetch current TAF(s)"
+    def taf(*stations)
+      tafs = Briefer.taf(*stations)
+
+      if output_format == "json"
+        puts JSON.pretty_generate(tafs.map(&:to_h))
+      else
+        tafs.each { |t| print Formatters::Text.format_taf(t) }
+      end
+    rescue Briefer::Error => e
+      warn "Error: #{e.message}"
+      exit 1
+    end
+
     desc "categories STATION [STATION...]", "Check flight categories"
     def categories(*stations)
       metars = Briefer.metar(*stations)

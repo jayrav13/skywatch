@@ -10,6 +10,7 @@ require_relative "briefer/models/taf_group"
 require_relative "briefer/models/taf"
 require_relative "briefer/analysis/flight_category"
 require_relative "briefer/sources/metar"
+require_relative "briefer/sources/taf"
 require_relative "briefer/formatters/text"
 
 module Briefer
@@ -24,6 +25,10 @@ module Briefer
 
     def metar(*station_ids)
       Sources::Metar.new.fetch(*station_ids)
+    end
+
+    def taf(*station_ids)
+      Sources::Taf.new.fetch(*station_ids)
     end
   end
 end
