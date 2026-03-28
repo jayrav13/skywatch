@@ -19,8 +19,18 @@
 - `rspec` (~> 3.0)
 - `webmock` (~> 3.0)
 - `vcr` (~> 6.0)
-- `rubocop` (~> 1.0)
+- `rubocop` (~> 1.86)
+- `rubocop-rspec` (~> 3.0)
 - `rake` (~> 13.0)
+- `lefthook` (~> 2.1)
+
+## Linting & Git Hooks (mirrors njtransit)
+
+Set up early — all code written in Phase 1 must pass lint from the start.
+
+- **RuboCop**: double quotes, 120 char lines, `Style/Documentation` disabled, `rubocop-rspec` plugin
+- **Lefthook**: pre-commit runs rubocop on staged .rb files (`stage_fixed: true`), pre-push runs rspec
+- **`.rspec`**: `--format documentation --color --require spec_helper`
 
 ## Components
 
