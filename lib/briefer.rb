@@ -2,6 +2,16 @@
 
 require_relative "briefer/version"
 require_relative "briefer/errors"
+require_relative "briefer/client/http"
 
 module Briefer
+  class << self
+    def client
+      @client ||= Client::Http.new
+    end
+
+    def reset!
+      @client = nil
+    end
+  end
 end
