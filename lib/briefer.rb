@@ -3,6 +3,7 @@
 require_relative "briefer/version"
 require_relative "briefer/errors"
 require_relative "briefer/client/http"
+require_relative "briefer/client/cache"
 require_relative "briefer/models/position"
 require_relative "briefer/models/metar"
 require_relative "briefer/analysis/flight_category"
@@ -12,7 +13,7 @@ require_relative "briefer/formatters/text"
 module Briefer
   class << self
     def client
-      @client ||= Client::Http.new
+      @client ||= Client::Cache.new(client: Client::Http.new)
     end
 
     def reset!

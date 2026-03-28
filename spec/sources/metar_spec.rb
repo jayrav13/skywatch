@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Briefer::Sources::Metar do
-  subject(:source) { described_class.new(client: Briefer.client) }
+  subject(:source) { described_class.new(client: Briefer::Client::Http.new) }
 
   let(:kcdw_response) { [JSON.parse(File.read("spec/fixtures/metars/kcdw.json"))] }
   let(:multi_response) do

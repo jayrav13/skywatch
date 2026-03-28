@@ -27,7 +27,7 @@ RSpec.describe Briefer::Client::Http do
       stub_request(:get, "https://aviationweather.gov/api/data/metar?ids=KCDW&format=json")
         .to_return(status: 200, body: '[{"icaoId":"KCDW"}]', headers: { "Content-Type" => "application/json" })
 
-      response = client.get("/api/data/metar", ids: "KCDW", format: "json")
+      response = client.get("/api/data/metar", { ids: "KCDW", format: "json" })
       expect(response).to eq([{ "icaoId" => "KCDW" }])
     end
 

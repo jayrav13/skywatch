@@ -25,7 +25,7 @@ RSpec.describe Briefer do
 
   describe ".client" do
     it "returns a lazy-initialized HTTP client" do
-      expect(described_class.client).to be_a(Briefer::Client::Http)
+      expect(described_class.client).to be_a(Briefer::Client::Cache)
     end
 
     it "returns the same instance on repeated calls" do

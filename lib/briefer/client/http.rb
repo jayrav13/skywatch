@@ -15,7 +15,7 @@ module Briefer
         @connection = build_connection
       end
 
-      def get(path, params = {})
+      def get(path, params = {}, ttl: nil) # rubocop:disable Lint/UnusedMethodArgument
         response = connection.get(path, params)
         raise ApiError.new("HTTP #{response.status}", response: response) unless response.success?
 
