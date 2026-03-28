@@ -1,0 +1,25 @@
+{
+  "icaoId": "KCDW",
+  "receiptTime": "2026-03-28T04:55:55.357Z",
+  "obsTime": 1774673580,
+  "reportTime": "2026-03-28T05:00:00.000Z",
+  "temp": 3.9,
+  "dewp": -8.9,
+  "wdir": 330,
+  "wspd": 3,
+  "visib": "10+",
+  "altim": 1023.5,
+  "slp": 1023.9,
+  "qcField": 4,
+  "metarType": "METAR",
+  "rawOb": "METAR KCDW 280453Z 33003KT 10SM BKN070 04/M09 A3022 RMK AO2 SLP239 T00391089 401670039",
+  "lat": 40.8764,
+  "lon": -74.2828,
+  "elev": 52,
+  "name": "Caldwell/Essex Cnty, NJ, US",
+  "cover": "BKN",
+  "clouds": [
+    { "cover": "BKN", "base": 7000 }
+  ],
+  "fltCat": "VFR"
+}
