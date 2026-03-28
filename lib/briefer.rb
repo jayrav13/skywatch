@@ -7,6 +7,7 @@ require_relative "briefer/models/position"
 require_relative "briefer/models/metar"
 require_relative "briefer/analysis/flight_category"
 require_relative "briefer/sources/metar"
+require_relative "briefer/formatters/text"
 
 module Briefer
   class << self
