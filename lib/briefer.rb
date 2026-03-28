@@ -6,6 +6,7 @@ require_relative "briefer/client/http"
 require_relative "briefer/models/position"
 require_relative "briefer/models/metar"
 require_relative "briefer/analysis/flight_category"
+require_relative "briefer/sources/metar"
 
 module Briefer
   class << self
@@ -15,6 +16,10 @@ module Briefer
 
     def reset!
       @client = nil
+    end
+
+    def metar(*station_ids)
+      Sources::Metar.new.fetch(*station_ids)
     end
   end
 end
