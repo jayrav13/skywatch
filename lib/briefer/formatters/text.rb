@@ -71,6 +71,26 @@ module Briefer
         "  #{parts.join("  ")}  (#{pirep.observed_at.strftime("%H%MZ")})\n"
       end
 
+      def self.format_winds_aloft(winds) # rubocop:disable Metrics/MethodLength
+        return "No winds aloft data available\n" if winds.empty?
+
+        lines = [winds_aloft_row("Alt", "Dir", "Speed", "Temp")]
+        winds.each do |w|
+          alt = "#{number_with_commas(w.altitude_ft)}'"
+          temp = w.temperature_c ? "#{w.temperature_c}°C" : "-"
+          lines << if w.light_and_variable?
+                     winds_aloft_row(alt, "VRB", "LGT", temp)
+                   else
+                     winds_aloft_row(alt, "#{w.wind_direction_deg}°", "#{w.wind_speed_kt}kt", temp)
+                   end
+        end
+        lines.join
+      end
+
+      def self.winds_aloft_row(alt, dir, speed, temp)
+        "  #{alt.ljust(8)} #{dir.ljust(10)} #{speed.ljust(8)} #{temp}\n"
+      end
+
       private_class_method :format_wind, :format_visibility, :format_ceiling, :number_with_commas, :format_taf_clouds
     end
   end

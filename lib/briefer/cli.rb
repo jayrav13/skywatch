@@ -50,6 +50,22 @@ module Briefer
       exit 1
     end
 
+    desc "winds STATION", "Fetch winds aloft forecast"
+    option :altitude, type: :numeric, desc: "Filter to specific altitude (feet)"
+    def winds(station)
+      winds = Briefer.winds_aloft(station, altitude_ft: options[:altitude])
+
+      if output_format == "json"
+        puts JSON.pretty_generate(winds.map(&:to_h))
+      else
+        puts "Winds aloft for #{station.upcase}:"
+        print Formatters::Text.format_winds_aloft(winds)
+      end
+    rescue Briefer::Error => e
+      warn "Error: #{e.message}"
+      exit 1
+    end
+
     desc "categories STATION [STATION...]", "Check flight categories"
     def categories(*stations)
       metars = Briefer.metar(*stations)
