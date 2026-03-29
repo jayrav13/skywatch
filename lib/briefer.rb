@@ -43,6 +43,18 @@ module Briefer
     def winds_aloft(station_id, altitude_ft: nil)
       Sources::WindsAloft.new.fetch(station_id, altitude_ft: altitude_ft)
     end
+
+    def crosswind(station_id, runway_heading:)
+      metars = metar(station_id)
+      raise Error, "No METAR available for #{station_id}" if metars.empty?
+
+      m = metars.first
+      Analysis::CrosswindCalculator.calculate(
+        wind_direction_deg: m.wind_direction_deg || 0,
+        wind_speed_kt: m.wind_speed_kt || 0,
+        runway_heading: runway_heading
+      )
+    end
   end
 end
 

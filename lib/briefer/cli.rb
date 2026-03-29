@@ -66,6 +66,21 @@ module Briefer
       exit 1
     end
 
+    desc "crosswind STATION", "Calculate crosswind component"
+    option :runway, type: :numeric, required: true, desc: "Runway heading (degrees)"
+    def crosswind(station)
+      result = Briefer.crosswind(station, runway_heading: options[:runway])
+
+      if output_format == "json"
+        puts JSON.pretty_generate(result)
+      else
+        print Formatters::Text.format_crosswind(result, station.upcase, options[:runway])
+      end
+    rescue Briefer::Error => e
+      warn "Error: #{e.message}"
+      exit 1
+    end
+
     desc "categories STATION [STATION...]", "Check flight categories"
     def categories(*stations)
       metars = Briefer.metar(*stations)

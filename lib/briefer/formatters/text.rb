@@ -91,7 +91,15 @@ module Briefer
         "  #{alt.ljust(8)} #{dir.ljust(10)} #{speed.ljust(8)} #{temp}\n"
       end
 
-      private_class_method :format_wind, :format_visibility, :format_ceiling, :number_with_commas, :format_taf_clouds
+      def self.format_crosswind(result, station_id, runway_heading)
+        tailwind = result[:headwind_kt].negative?
+        hw_label = tailwind ? "Tailwind" : "Headwind"
+        "#{station_id} Runway #{runway_heading}°: Crosswind #{result[:crosswind_kt]}kt, " \
+          "#{hw_label} #{result[:headwind_kt].abs}kt\n"
+      end
+
+      private_class_method :format_wind, :format_visibility, :format_ceiling, :number_with_commas,
+                           :format_taf_clouds, :winds_aloft_row
     end
   end
 end
