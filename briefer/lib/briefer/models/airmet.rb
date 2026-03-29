@@ -28,7 +28,7 @@ module Briefer
         )
       end
 
-      def initialize(**attrs) # rubocop:disable Metrics/MethodLength
+      def initialize(**attrs) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         @tag = attrs[:tag]
         @product = attrs[:product]
         @hazard = attrs[:hazard]
@@ -49,7 +49,7 @@ module Briefer
         Geometry.polygon_from_coords(coords)
       end
 
-      def to_h # rubocop:disable Metrics/MethodLength
+      def to_h # rubocop:disable Metrics/AbcSize
         {
           tag: tag, product: product, hazard: hazard, due_to: due_to,
           severity: severity, forecast_hour: forecast_hour,

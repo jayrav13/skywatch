@@ -6,7 +6,7 @@ RSpec.describe Briefer::Models::Airmet do
   describe ".from_awc" do
     subject(:airmet) { described_class.from_awc(data) }
 
-    it "parses identification fields" do # rubocop:disable RSpec/MultipleExpectations
+    it "parses identification fields" do
       expect(airmet.tag).to eq("3E")
       expect(airmet.product).to eq(:sierra)
       expect(airmet.hazard).to eq("MT_OBSC")
