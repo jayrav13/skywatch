@@ -32,6 +32,24 @@ module Briefer
       exit 1
     end
 
+    desc "pireps STATION", "Fetch recent PIREPs near station"
+    option :radius, type: :numeric, default: 100, desc: "Search radius in NM"
+    def pireps(station) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      reports = Briefer.pireps(station, radius_nm: options[:radius])
+
+      if output_format == "json"
+        puts JSON.pretty_generate(reports.map(&:to_h))
+      elsif reports.empty?
+        puts "No PIREPs within #{options[:radius]}nm of #{station.upcase}"
+      else
+        puts "PIREPs within #{options[:radius]}nm of #{station.upcase}:"
+        reports.each { |p| print Formatters::Text.format_pirep(p) }
+      end
+    rescue Briefer::Error => e
+      warn "Error: #{e.message}"
+      exit 1
+    end
+
     desc "categories STATION [STATION...]", "Check flight categories"
     def categories(*stations)
       metars = Briefer.metar(*stations)

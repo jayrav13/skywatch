@@ -55,6 +55,34 @@ RSpec.describe Briefer::CLI do
     end
   end
 
+  describe "pireps command" do
+    let(:pirep_response) do
+      [
+        JSON.parse(File.read("spec/fixtures/pireps/icing.json")),
+        JSON.parse(File.read("spec/fixtures/pireps/turbulence.json"))
+      ]
+    end
+
+    before do
+      stub_request(:get, "https://aviationweather.gov/api/data/pirep")
+        .with(query: { id: "KCDW", dist: "100", format: "json" })
+        .to_return(status: 200, body: pirep_response.to_json, headers: { "Content-Type" => "application/json" })
+    end
+
+    it "outputs PIREPs in text format" do
+      output = capture_stdout { described_class.start(["pireps", "KCDW", "--format", "text"]) }
+      expect(output).to include("PIREPs within 100nm of KCDW")
+      expect(output).to include("C17")
+    end
+
+    it "outputs PIREPs in JSON format" do
+      output = capture_stdout { described_class.start(["pireps", "KCDW", "--format", "json"]) }
+      parsed = JSON.parse(output)
+      expect(parsed).to be_an(Array)
+      expect(parsed.size).to eq(2)
+    end
+  end
+
   describe "categories command" do
     it "outputs flight categories in text format" do
       output = capture_stdout { described_class.start(["categories", "KCDW", "--format", "text"]) }

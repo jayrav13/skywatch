@@ -63,6 +63,14 @@ module Briefer
         end.join(" ")
       end
 
+      def self.format_pirep(pirep)
+        parts = ["#{pirep.aircraft_type} FL#{format("%03d", pirep.flight_level || 0)}"]
+        parts << "IC:#{pirep.icing_intensity} #{pirep.icing_type}" if pirep.icing?
+        parts << "TB:#{pirep.turbulence_intensity}" if pirep.turbulence?
+        parts << "Temp:#{pirep.temperature_c}°C" if pirep.temperature_c
+        "  #{parts.join("  ")}  (#{pirep.observed_at.strftime("%H%MZ")})\n"
+      end
+
       private_class_method :format_wind, :format_visibility, :format_ceiling, :number_with_commas, :format_taf_clouds
     end
   end

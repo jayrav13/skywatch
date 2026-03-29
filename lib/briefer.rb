@@ -12,6 +12,7 @@ require_relative "briefer/models/pirep"
 require_relative "briefer/analysis/flight_category"
 require_relative "briefer/sources/metar"
 require_relative "briefer/sources/taf"
+require_relative "briefer/sources/pirep"
 require_relative "briefer/formatters/text"
 
 module Briefer
@@ -30,6 +31,10 @@ module Briefer
 
     def taf(*station_ids)
       Sources::Taf.new.fetch(*station_ids)
+    end
+
+    def pireps(station_id, radius_nm: 100)
+      Sources::Pirep.new.fetch(station_id, radius_nm: radius_nm)
     end
   end
 end
