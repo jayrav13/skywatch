@@ -1,0 +1,28 @@
+{
+  "icaoId": "KEWR",
+  "receiptTime": "2026-03-28T04:54:08.727Z",
+  "obsTime": 1774673460,
+  "reportTime": "2026-03-28T05:00:00.000Z",
+  "temp": 5.0,
+  "dewp": -10.0,
+  "wdir": 340,
+  "wspd": 13,
+  "wgst": 21,
+  "visib": "10+",
+  "altim": 1023.1,
+  "slp": 1022.8,
+  "qcField": 4,
+  "metarType": "METAR",
+  "rawOb": "METAR KEWR 280451Z 34013G21KT 10SM FEW050 BKN065 BKN130 05/M10 A3021 RMK AO2 SLP228 T00501100 401830050",
+  "lat": 40.6828,
+  "lon": -74.1692,
+  "elev": 2,
+  "name": "Newark Intl, NJ, US",
+  "cover": "BKN",
+  "clouds": [
+    { "cover": "FEW", "base": 5000 },
+    { "cover": "BKN", "base": 6500 },
+    { "cover": "BKN", "base": 13000 }
+  ],
+  "fltCat": "VFR"
+}

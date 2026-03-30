@@ -1,1 +1,8 @@
-*.rspec_status
+/.bundle/
+/tmp/
+/pkg/
+Gemfile.lock
+*.gem
+.rspec_status
+/briefer/
+/radar/
