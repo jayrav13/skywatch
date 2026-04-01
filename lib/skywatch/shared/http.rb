@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require "faraday"
-require "faraday/retry"
-require "json"
+require 'faraday'
+require 'faraday/retry'
+require 'json'
 
 module Skywatch
   module Shared
     class Http
-      DEFAULT_BASE_URL = "https://aviationweather.gov"
+      DEFAULT_BASE_URL = 'https://aviationweather.gov'
 
       attr_reader :connection
 
@@ -40,7 +40,7 @@ module Skywatch
       def build_connection(base_url)
         Faraday.new(url: base_url) do |f|
           f.request :retry, max: 3, interval: 0.5, backoff_factor: 2
-          f.headers["User-Agent"] = "Skywatch/#{Skywatch::VERSION} (ruby; github.com/jayrav13/skywatch)"
+          f.headers['User-Agent'] = "Skywatch/#{Skywatch::VERSION} (ruby; github.com/jayrav13/skywatch)"
           f.options.open_timeout = 10
           f.options.timeout = 30
         end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "rgeo"
+require 'rgeo'
 
 module Skywatch
   module Shared

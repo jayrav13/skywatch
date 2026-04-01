@@ -18,7 +18,7 @@ module Skywatch
             wind_direction_deg: direction,
             wind_speed_kt: speed,
             temperature_c: temp,
-            light_and_variable: direction.nil? && speed.nil? && encoded.start_with?("99")
+            light_and_variable: direction.nil? && speed.nil? && encoded.start_with?('99')
           )
         end
 

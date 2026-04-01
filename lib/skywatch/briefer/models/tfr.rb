@@ -8,16 +8,16 @@ module Skywatch
                     :last_modified, :coords
 
         def self.from_geojson_feature(feature) # rubocop:disable Metrics/MethodLength
-          props = feature["properties"]
-          geom = feature["geometry"]
+          props = feature['properties']
+          geom = feature['geometry']
 
           new(
-            notam_key: props["NOTAM_KEY"],
-            title: props["TITLE"],
-            state: props["STATE"],
-            type: props["LEGAL"],
-            center_id: props["CNS_LOCATION_ID"],
-            last_modified: parse_datetime(props["LAST_MODIFICATION_DATETIME"]),
+            notam_key: props['NOTAM_KEY'],
+            title: props['TITLE'],
+            state: props['STATE'],
+            type: props['LEGAL'],
+            center_id: props['CNS_LOCATION_ID'],
+            last_modified: parse_datetime(props['LAST_MODIFICATION_DATETIME']),
             coords: parse_geojson_coords(geom)
           )
         end
@@ -55,10 +55,10 @@ module Skywatch
         end
 
         def self.parse_geojson_coords(geom)
-          return [] if geom.nil? || geom["coordinates"].nil?
+          return [] if geom.nil? || geom['coordinates'].nil?
 
           # GeoJSON is [lon, lat], Position is (lat, lon)
-          geom["coordinates"][0].map { |lon, lat| Skywatch::Shared::Position.new(lat: lat, lon: lon) }
+          geom['coordinates'][0].map { |lon, lat| Skywatch::Shared::Position.new(lat: lat, lon: lon) }
         end
 
         private_class_method :parse_datetime, :parse_geojson_coords

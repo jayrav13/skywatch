@@ -5,7 +5,7 @@ module Skywatch
     module Models
       class TafGroup
         CEILING_COVERS = %i[bkn ovc].freeze
-        CHANGE_TYPES = { nil => :initial, "FM" => :fm, "BECMG" => :becmg, "TEMPO" => :tempo, "PROB" => :prob }.freeze
+        CHANGE_TYPES = { nil => :initial, 'FM' => :fm, 'BECMG' => :becmg, 'TEMPO' => :tempo, 'PROB' => :prob }.freeze
 
         attr_reader :time_from, :time_to, :change_type, :probability,
                     :wind_direction_deg, :wind_speed_kt, :wind_gust_kt,
@@ -13,16 +13,16 @@ module Skywatch
 
         def self.from_awc(data) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           new(
-            time_from: Time.at(data["timeFrom"]).utc,
-            time_to: Time.at(data["timeTo"]).utc,
-            change_type: CHANGE_TYPES.fetch(data["fcstChange"], :initial),
-            probability: data["probability"],
-            wind_direction_deg: data["wdir"],
-            wind_speed_kt: data["wspd"],
-            wind_gust_kt: data["wgst"],
-            visibility_sm: Metar.send(:parse_visibility, data["visib"]),
-            weather: Metar.send(:parse_weather, data["wxString"]),
-            sky_condition: Metar.send(:parse_clouds, data["clouds"])
+            time_from: Time.at(data['timeFrom']).utc,
+            time_to: Time.at(data['timeTo']).utc,
+            change_type: CHANGE_TYPES.fetch(data['fcstChange'], :initial),
+            probability: data['probability'],
+            wind_direction_deg: data['wdir'],
+            wind_speed_kt: data['wspd'],
+            wind_gust_kt: data['wgst'],
+            visibility_sm: Metar.send(:parse_visibility, data['visib']),
+            weather: Metar.send(:parse_weather, data['wxString']),
+            sky_condition: Metar.send(:parse_clouds, data['clouds'])
           )
         end
 

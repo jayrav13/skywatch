@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "json"
-require "time"
+require 'json'
+require 'time'
 
 module Skywatch
   module Briefer
@@ -20,24 +20,24 @@ module Skywatch
         # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         def self.from_awc(data)
           new(
-            raw: data["rawOb"],
-            station_id: data["icaoId"],
-            observed_at: Time.at(data["obsTime"]).utc,
-            metar_type: data["metarType"],
-            wind_direction_deg: data["wdir"],
-            wind_speed_kt: data["wspd"],
-            wind_gust_kt: data["wgst"],
-            visibility_sm: parse_visibility(data["visib"]),
-            weather: parse_weather(data["wxString"]),
-            sky_condition: parse_clouds(data["clouds"]),
-            temperature_c: data["temp"]&.to_f,
-            dewpoint_c: data["dewp"]&.to_f,
-            altimeter_inhg: data["altim"] ? (data["altim"] * HPA_TO_INHG).round(2) : nil,
-            station_name: data["name"],
-            latitude: data["lat"],
-            longitude: data["lon"],
-            elevation_ft: data["elev"] ? (data["elev"] * 3.28084).round : nil,
-            sea_level_pressure_mb: data["slp"]
+            raw: data['rawOb'],
+            station_id: data['icaoId'],
+            observed_at: Time.at(data['obsTime']).utc,
+            metar_type: data['metarType'],
+            wind_direction_deg: data['wdir'],
+            wind_speed_kt: data['wspd'],
+            wind_gust_kt: data['wgst'],
+            visibility_sm: parse_visibility(data['visib']),
+            weather: parse_weather(data['wxString']),
+            sky_condition: parse_clouds(data['clouds']),
+            temperature_c: data['temp']&.to_f,
+            dewpoint_c: data['dewp']&.to_f,
+            altimeter_inhg: data['altim'] ? (data['altim'] * HPA_TO_INHG).round(2) : nil,
+            station_name: data['name'],
+            latitude: data['lat'],
+            longitude: data['lon'],
+            elevation_ft: data['elev'] ? (data['elev'] * 3.28084).round : nil,
+            sea_level_pressure_mb: data['slp']
           )
         end
         # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
@@ -118,9 +118,9 @@ module Skywatch
         def self.parse_visibility(visib)
           return nil if visib.nil?
 
-          visib = visib.to_s.gsub("+", "")
-          if visib.include?("/")
-            parts = visib.split("/")
+          visib = visib.to_s.gsub('+', '')
+          if visib.include?('/')
+            parts = visib.split('/')
             parts[0].to_f / parts[1].to_i
           else
             visib.to_f
@@ -137,7 +137,7 @@ module Skywatch
           return [] if clouds.nil?
 
           clouds.map do |cloud|
-            { cover: cloud["cover"]&.downcase&.to_sym, base_ft: cloud["base"] }
+            { cover: cloud['cover']&.downcase&.to_sym, base_ft: cloud['base'] }
           end
         end
 

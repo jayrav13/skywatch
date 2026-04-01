@@ -12,24 +12,24 @@ module Skywatch
 
         def self.from_awc(data) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
           new(
-            raw: data["rawOb"],
-            observed_at: Time.at(data["obsTime"]).utc,
-            pirep_type: data["pirepType"]&.downcase&.to_sym || :pirep,
-            aircraft_type: data["acType"],
-            latitude: data["lat"],
-            longitude: data["lon"],
-            flight_level: data["fltLvl"],
-            temperature_c: data["temp"],
-            wind_direction_deg: data["wdir"],
-            wind_speed_kt: data["wspd"],
-            icing_intensity: blank_to_nil(data["icgInt1"]),
-            icing_type: blank_to_nil(data["icgType1"]),
-            icing_base_ft: data["icgBas1"] ? data["icgBas1"] * 100 : nil,
-            icing_top_ft: data["icgTop1"] ? data["icgTop1"] * 100 : nil,
-            turbulence_intensity: blank_to_nil(data["tbInt1"]),
-            turbulence_type: blank_to_nil(data["tbType1"]),
-            turbulence_base_ft: data["tbBas1"] ? data["tbBas1"] * 100 : nil,
-            turbulence_top_ft: data["tbTop1"] ? data["tbTop1"] * 100 : nil
+            raw: data['rawOb'],
+            observed_at: Time.at(data['obsTime']).utc,
+            pirep_type: data['pirepType']&.downcase&.to_sym || :pirep,
+            aircraft_type: data['acType'],
+            latitude: data['lat'],
+            longitude: data['lon'],
+            flight_level: data['fltLvl'],
+            temperature_c: data['temp'],
+            wind_direction_deg: data['wdir'],
+            wind_speed_kt: data['wspd'],
+            icing_intensity: blank_to_nil(data['icgInt1']),
+            icing_type: blank_to_nil(data['icgType1']),
+            icing_base_ft: data['icgBas1'] ? data['icgBas1'] * 100 : nil,
+            icing_top_ft: data['icgTop1'] ? data['icgTop1'] * 100 : nil,
+            turbulence_intensity: blank_to_nil(data['tbInt1']),
+            turbulence_type: blank_to_nil(data['tbType1']),
+            turbulence_base_ft: data['tbBas1'] ? data['tbBas1'] * 100 : nil,
+            turbulence_top_ft: data['tbTop1'] ? data['tbTop1'] * 100 : nil
           )
         end
 

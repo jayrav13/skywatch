@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "skywatch"
-require "webmock/rspec"
+require 'skywatch'
+require 'webmock/rspec'
 
 RSpec.configure do |config|
-  config.example_status_persistence_file_path = ".rspec_status"
+  config.example_status_persistence_file_path = '.rspec_status'
   config.disable_monkey_patching!
 
   config.expect_with :rspec do |c|

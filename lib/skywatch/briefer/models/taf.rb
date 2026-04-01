@@ -10,16 +10,16 @@ module Skywatch
 
         def self.from_awc(data) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
           new(
-            station_id: data["icaoId"],
-            raw: data["rawTAF"],
-            issued_at: Time.parse(data["issueTime"]).utc,
-            valid_from: Time.at(data["validTimeFrom"]).utc,
-            valid_to: Time.at(data["validTimeTo"]).utc,
-            station_name: data["name"],
-            latitude: data["lat"],
-            longitude: data["lon"],
-            elevation_ft: data["elev"] ? (data["elev"] * 3.28084).round : nil,
-            forecast_groups: data["fcsts"]&.map { |f| TafGroup.from_awc(f) } || []
+            station_id: data['icaoId'],
+            raw: data['rawTAF'],
+            issued_at: Time.parse(data['issueTime']).utc,
+            valid_from: Time.at(data['validTimeFrom']).utc,
+            valid_to: Time.at(data['validTimeTo']).utc,
+            station_name: data['name'],
+            latitude: data['lat'],
+            longitude: data['lon'],
+            elevation_ft: data['elev'] ? (data['elev'] * 3.28084).round : nil,
+            forecast_groups: data['fcsts']&.map { |f| TafGroup.from_awc(f) } || []
           )
         end
 

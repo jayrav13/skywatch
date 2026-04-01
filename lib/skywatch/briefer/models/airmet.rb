@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "time"
+require 'time'
 
 module Skywatch
   module Briefer
@@ -12,20 +12,20 @@ module Skywatch
 
         def self.from_awc(data) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           new(
-            tag: data["tag"],
-            product: data["product"]&.downcase&.to_sym,
-            hazard: data["hazard"],
-            due_to: blank_to_nil(data["due_to"]),
-            severity: blank_to_nil(data["severity"]),
-            forecast_hour: data["forecastHour"],
-            valid_at: Time.parse(data["validTime"]).utc,
-            issued_at: Time.at(data["issueTime"]).utc,
-            expires_at: Time.at(data["expireTime"]).utc,
-            top: blank_to_nil(data["top"]),
-            base: blank_to_nil(data["base"]),
-            freeze_level_top: blank_to_nil(data["fzltop"]),
-            freeze_level_base: blank_to_nil(data["fzlbase"]),
-            coords: parse_coords(data["coords"])
+            tag: data['tag'],
+            product: data['product']&.downcase&.to_sym,
+            hazard: data['hazard'],
+            due_to: blank_to_nil(data['due_to']),
+            severity: blank_to_nil(data['severity']),
+            forecast_hour: data['forecastHour'],
+            valid_at: Time.parse(data['validTime']).utc,
+            issued_at: Time.at(data['issueTime']).utc,
+            expires_at: Time.at(data['expireTime']).utc,
+            top: blank_to_nil(data['top']),
+            base: blank_to_nil(data['base']),
+            freeze_level_top: blank_to_nil(data['fzltop']),
+            freeze_level_base: blank_to_nil(data['fzlbase']),
+            coords: parse_coords(data['coords'])
           )
         end
 
@@ -75,7 +75,7 @@ module Skywatch
         def self.parse_coords(coords_data)
           return [] if coords_data.nil?
 
-          coords_data.map { |c| Skywatch::Shared::Position.new(lat: c["lat"].to_f, lon: c["lon"].to_f) }
+          coords_data.map { |c| Skywatch::Shared::Position.new(lat: c['lat'].to_f, lon: c['lon'].to_f) }
         end
 
         private_class_method :blank_to_nil, :parse_coords

@@ -11,19 +11,19 @@ module Skywatch
 
         def self.from_awc(data) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           new(
-            series_id: data["seriesId"],
-            issuing_center: data["icaoId"],
-            sigmet_type: data["airSigmetType"]&.downcase&.to_sym || :sigmet,
-            hazard: data["hazard"],
-            severity: data["severity"],
-            raw: data["rawAirSigmet"],
-            valid_from: Time.at(data["validTimeFrom"]).utc,
-            valid_to: Time.at(data["validTimeTo"]).utc,
-            altitude_hi_ft: data["altitudeHi1"],
-            altitude_low_ft: data["altitudeLow1"],
-            movement_dir_deg: data["movementDir"],
-            movement_speed_kt: data["movementSpd"],
-            coords: parse_coords(data["coords"])
+            series_id: data['seriesId'],
+            issuing_center: data['icaoId'],
+            sigmet_type: data['airSigmetType']&.downcase&.to_sym || :sigmet,
+            hazard: data['hazard'],
+            severity: data['severity'],
+            raw: data['rawAirSigmet'],
+            valid_from: Time.at(data['validTimeFrom']).utc,
+            valid_to: Time.at(data['validTimeTo']).utc,
+            altitude_hi_ft: data['altitudeHi1'],
+            altitude_low_ft: data['altitudeLow1'],
+            movement_dir_deg: data['movementDir'],
+            movement_speed_kt: data['movementSpd'],
+            coords: parse_coords(data['coords'])
           )
         end
 
@@ -66,7 +66,7 @@ module Skywatch
         def self.parse_coords(coords_data)
           return [] if coords_data.nil?
 
-          coords_data.map { |c| Skywatch::Shared::Position.new(lat: c["lat"].to_f, lon: c["lon"].to_f) }
+          coords_data.map { |c| Skywatch::Shared::Position.new(lat: c['lat'].to_f, lon: c['lon'].to_f) }
         end
 
         private_class_method :parse_coords
