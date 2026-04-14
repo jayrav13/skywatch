@@ -1,6 +1,7 @@
 /.bundle/
 /tmp/
 /pkg/
+/.worktrees/
 Gemfile.lock
 *.gem
 .rspec_status
