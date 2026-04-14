@@ -81,6 +81,41 @@ RSpec.describe Skywatch::Briefer::CLI do
     end
   end
 
+  describe 'sigmets command' do
+    let(:active_sigmets) { JSON.parse(File.read('spec/fixtures/sigmets/active.json')) }
+
+    before do
+      stub_request(:get, 'https://aviationweather.gov/api/data/airsigmet')
+        .with(query: { format: 'json' })
+        .to_return(status: 200, body: active_sigmets.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'outputs SIGMETs in text format' do
+      output = capture_stdout { described_class.start(['sigmets', '--format', 'text']) }
+      expect(output).to include('SIGMET')
+      expect(output).to include('CONVECTIVE')
+    end
+
+    it 'outputs SIGMETs in JSON format' do
+      output = capture_stdout { described_class.start(['sigmets', '--format', 'json']) }
+      parsed = JSON.parse(output)
+      expect(parsed).to be_an(Array)
+      expect(parsed.size).to eq(2)
+      expect(parsed.first['series_id']).to eq('3E')
+    end
+
+    it 'outputs no active message when empty' do
+      Skywatch.reset!
+      stub_request(:get, 'https://aviationweather.gov/api/data/airsigmet')
+        .with(query: { format: 'json' })
+        .to_return(status: 200, body: '[]', headers: { 'Content-Type' => 'application/json' })
+
+      output = capture_stdout { described_class.start(['sigmets', '--format', 'text']) }
+      expect(output).to include('No active SIGMETs')
+    end
+  end
+
   describe 'categories command' do
     it 'outputs flight categories in text format' do
       output = capture_stdout { described_class.start(['categories', 'KCDW', '--format', 'text']) }

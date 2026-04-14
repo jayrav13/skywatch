@@ -92,6 +92,24 @@ module Skywatch
           "  #{alt.ljust(8)} #{dir.ljust(10)} #{speed.ljust(8)} #{temp}\n"
         end
 
+        def self.format_sigmet(sigmet) # rubocop:disable Metrics/AbcSize
+          lines = []
+          lines << "[#{sigmet.sigmet_type.to_s.upcase}] #{sigmet.series_id} — #{sigmet.hazard}"
+          lines << "  Issuing center: #{sigmet.issuing_center}"
+          lines << "  Altitude: #{format_altitude_band(sigmet.altitude_low_ft, sigmet.altitude_hi_ft)}"
+          from = sigmet.valid_from&.strftime('%d %b %H%MZ')
+          to   = sigmet.valid_to&.strftime('%d %b %H%MZ')
+          lines << "  Valid: #{from} \u2013 #{to}"
+          lines << "  #{sigmet.raw}" if sigmet.raw
+          "#{lines.join("\n")}\n"
+        end
+
+        def self.format_altitude_band(low_ft, hi_ft)
+          low = low_ft ? "#{number_with_commas(low_ft)}'" : 'SFC'
+          hi  = hi_ft  ? "#{number_with_commas(hi_ft)}'"  : 'UNL'
+          "#{low} – #{hi}"
+        end
+
         def self.format_crosswind(result, station_id, runway_heading)
           tailwind = result[:headwind_kt].negative?
           hw_label = tailwind ? 'Tailwind' : 'Headwind'
@@ -100,7 +118,7 @@ module Skywatch
         end
 
         private_class_method :format_wind, :format_visibility, :format_ceiling, :number_with_commas,
-                             :format_taf_clouds, :winds_aloft_row
+                             :format_taf_clouds, :winds_aloft_row, :format_altitude_band
       end
     end
   end

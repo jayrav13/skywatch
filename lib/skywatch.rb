@@ -20,6 +20,7 @@ require_relative 'skywatch/briefer/sources/metar'
 require_relative 'skywatch/briefer/sources/taf'
 require_relative 'skywatch/briefer/sources/pirep'
 require_relative 'skywatch/briefer/sources/winds_aloft'
+require_relative 'skywatch/briefer/sources/sigmet'
 require_relative 'skywatch/briefer/formatters/text'
 require_relative 'skywatch/radar/models/state_vector'
 require_relative 'skywatch/radar/sources/opensky'
@@ -50,6 +51,10 @@ module Skywatch
 
     def winds_aloft(station_id, altitude_ft: nil)
       Briefer::Sources::WindsAloft.new.fetch(station_id, altitude_ft: altitude_ft)
+    end
+
+    def sigmets
+      Briefer::Sources::Sigmet.new.fetch
     end
 
     def flights(lat:, lon:, radius_nm: 50)

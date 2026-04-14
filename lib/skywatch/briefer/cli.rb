@@ -5,7 +5,7 @@ require 'json'
 
 module Skywatch
   module Briefer
-    class CLI < Thor
+    class CLI < Thor # rubocop:disable Metrics/ClassLength
       class_option :format, type: :string, enum: %w[text json],
                             desc: 'Output format (default: text on TTY, json when piped)'
 
@@ -76,6 +76,22 @@ module Skywatch
           puts JSON.pretty_generate(result)
         else
           print Skywatch::Briefer::Formatters::Text.format_crosswind(result, station.upcase, options[:runway])
+        end
+      rescue Skywatch::Error => e
+        warn "Error: #{e.message}"
+        exit 1
+      end
+
+      desc 'sigmets', 'List all active SIGMETs'
+      def sigmets # rubocop:disable Metrics/MethodLength
+        sigs = Skywatch.sigmets
+
+        if output_format == 'json'
+          puts JSON.pretty_generate(sigs.map(&:to_h))
+        elsif sigs.empty?
+          puts 'No active SIGMETs'
+        else
+          sigs.each { |s| print Skywatch::Briefer::Formatters::Text.format_sigmet(s) }
         end
       rescue Skywatch::Error => e
         warn "Error: #{e.message}"

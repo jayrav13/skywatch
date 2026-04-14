@@ -67,6 +67,23 @@ RSpec.describe Skywatch do
     end
   end
 
+  describe '.sigmets' do
+    let(:active_sigmets) { JSON.parse(File.read('spec/fixtures/sigmets/active.json')) }
+
+    before do
+      stub_request(:get, 'https://aviationweather.gov/api/data/airsigmet')
+        .with(query: { format: 'json' })
+        .to_return(status: 200, body: active_sigmets.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'returns an array of Sigmet models' do
+      sigs = described_class.sigmets
+      expect(sigs).to be_an(Array)
+      expect(sigs.first).to be_a(Skywatch::Briefer::Models::Sigmet)
+    end
+  end
+
   describe '.client' do
     it 'returns a lazy-initialized cached HTTP client' do
       expect(described_class.client).to be_a(Skywatch::Shared::Cache)

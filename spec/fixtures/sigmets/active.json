@@ -1,0 +1,55 @@
+[
+  {
+    "icaoId": "KKCI",
+    "alphaChar": "E",
+    "seriesId": "3E",
+    "receiptTime": "2026-03-29T01:50:55.441Z",
+    "creationTime": "2026-03-29T01:55:00.000Z",
+    "validTimeFrom": 1774749300,
+    "validTimeTo": 1774752899,
+    "airSigmetType": "SIGMET",
+    "hazard": "CONVECTIVE",
+    "altitudeHi1": 32000,
+    "altitudeHi2": 32000,
+    "altitudeLow1": null,
+    "altitudeLow2": null,
+    "movementDir": 10,
+    "movementSpd": 15,
+    "rawAirSigmet": "WSUS31 KKCI 290155\nSIGE \nCONVECTIVE SIGMET 3E\nVALID UNTIL 0355Z\nFL AND CSTL WTRS\nFROM 30NNE TRV-70ENE PBI-20ENE PBI-20W TRV-30NNE TRV\nAREA TS MOV FROM 01015KT. TOPS TO FL320.",
+    "postProcessFlag": 0,
+    "severity": 5,
+    "coords": [
+      {"lat": 28.145, "lon": -80.272},
+      {"lat": 27.122, "lon": -78.878},
+      {"lat": 26.807, "lon": -79.746},
+      {"lat": 27.679, "lon": -80.865},
+      {"lat": 28.145, "lon": -80.272}
+    ]
+  },
+  {
+    "icaoId": "KZOA",
+    "alphaChar": "A",
+    "seriesId": "1A",
+    "receiptTime": "2026-03-29T02:10:00.000Z",
+    "creationTime": "2026-03-29T02:15:00.000Z",
+    "validTimeFrom": 1774750200,
+    "validTimeTo": 1774757400,
+    "airSigmetType": "SIGMET",
+    "hazard": "TURB",
+    "altitudeHi1": 35000,
+    "altitudeHi2": null,
+    "altitudeLow1": 18000,
+    "altitudeLow2": null,
+    "movementDir": 270,
+    "movementSpd": 30,
+    "rawAirSigmet": "WSUS45 KZOA 290215\nSFO SIGMET ALPHA 1\nVALID 290215/290415Z\nSFO-\nFROM 400NW SFO-200NNW SFO-SFO-400NW SFO\nOCNL SEV TURB BTN FL180 AND FL350. FCST TO CONTG.",
+    "postProcessFlag": 0,
+    "severity": 3,
+    "coords": [
+      {"lat": 39.5, "lon": -125.2},
+      {"lat": 38.2, "lon": -124.1},
+      {"lat": 37.6, "lon": -122.4},
+      {"lat": 39.5, "lon": -125.2}
+    ]
+  }
+]
