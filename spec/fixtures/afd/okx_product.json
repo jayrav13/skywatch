@@ -1,0 +1,11 @@
+{
+  "@context": ["https://geojson.org/geojson-ld/geojson-context.jsonld"],
+  "@id": "https://api.weather.gov/products/abc12345-0000-0000-0000-000000000001",
+  "id": "abc12345-0000-0000-0000-000000000001",
+  "wmoCollectiveId": "FXUS61",
+  "issuingOffice": "OKX",
+  "issuanceTime": "2026-04-14T07:22:00+00:00",
+  "productCode": "AFD",
+  "productName": "Area Forecast Discussion",
+  "productText": "\n000\nFXUS61 KOKX 140722\nAFD\n\nArea Forecast Discussion\nNational Weather Service New York NY\n322 AM EDT Mon Apr 14 2026\n\n.SYNOPSIS...\nA strong low pressure system will track through the region today\nbefore clearing to the northeast by tonight.\n\n.NEAR TERM /UNTIL 6 AM THIS MORNING/...\nConditions remain unsettled with rain and gusty winds.\n\n.SHORT TERM /6 AM THIS MORNING THROUGH TUESDAY/...\nImproving conditions expected as the low exits to the northeast.\n\n$$\n"
+}

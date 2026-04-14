@@ -117,6 +117,20 @@ module Skywatch
         exit 1
       end
 
+      desc 'afd WFO', 'Fetch Area Forecast Discussion for a Weather Forecast Office'
+      def afd(wfo)
+        forecast = Skywatch.afd(wfo)
+
+        if output_format == 'json'
+          puts JSON.pretty_generate(forecast.to_h)
+        else
+          print Skywatch::Briefer::Formatters::Text.format_afd(forecast)
+        end
+      rescue Skywatch::Error => e
+        warn "Error: #{e.message}"
+        exit 1
+      end
+
       desc 'categories STATION [STATION...]', 'Check flight categories'
       def categories(*stations)
         metars = Skywatch.metar(*stations)

@@ -106,6 +106,27 @@ RSpec.describe Skywatch do
     end
   end
 
+  describe '.afd' do
+    let(:products_data) { JSON.parse(File.read('spec/fixtures/afd/okx_products.json')) }
+    let(:product_data) { JSON.parse(File.read('spec/fixtures/afd/okx_product.json')) }
+
+    before do
+      stub_request(:get, 'https://api.weather.gov/products/types/AFD/locations/OKX')
+        .to_return(status: 200, body: products_data.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+
+      stub_request(:get, 'https://api.weather.gov/products/abc12345-0000-0000-0000-000000000001')
+        .to_return(status: 200, body: product_data.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'returns an Afd model' do
+      result = described_class.afd('OKX')
+      expect(result).to be_a(Skywatch::Briefer::Models::Afd)
+      expect(result.wfo).to eq('OKX')
+    end
+  end
+
   describe '.client' do
     it 'returns a lazy-initialized cached HTTP client' do
       expect(described_class.client).to be_a(Skywatch::Shared::Cache)

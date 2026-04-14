@@ -14,6 +14,7 @@ require_relative 'skywatch/briefer/models/winds_aloft'
 require_relative 'skywatch/briefer/models/sigmet'
 require_relative 'skywatch/briefer/models/airmet'
 require_relative 'skywatch/briefer/models/tfr'
+require_relative 'skywatch/briefer/models/afd'
 require_relative 'skywatch/briefer/analysis/flight_category'
 require_relative 'skywatch/briefer/analysis/crosswind_calculator'
 require_relative 'skywatch/briefer/sources/metar'
@@ -22,6 +23,7 @@ require_relative 'skywatch/briefer/sources/pirep'
 require_relative 'skywatch/briefer/sources/winds_aloft'
 require_relative 'skywatch/briefer/sources/sigmet'
 require_relative 'skywatch/briefer/sources/airmet'
+require_relative 'skywatch/briefer/sources/afd'
 require_relative 'skywatch/briefer/formatters/text'
 require_relative 'skywatch/radar/models/state_vector'
 require_relative 'skywatch/radar/sources/opensky'
@@ -60,6 +62,10 @@ module Skywatch
 
     def airmets
       Briefer::Sources::Airmet.new.fetch
+    end
+
+    def afd(wfo)
+      Briefer::Sources::Afd.new.fetch(wfo)
     end
 
     def flights(lat:, lon:, radius_nm: 50)

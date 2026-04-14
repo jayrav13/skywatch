@@ -165,6 +165,35 @@ RSpec.describe Skywatch::Briefer::CLI do
     end
   end
 
+  describe 'afd command' do
+    let(:products_data) { JSON.parse(File.read('spec/fixtures/afd/okx_products.json')) }
+    let(:product_data) { JSON.parse(File.read('spec/fixtures/afd/okx_product.json')) }
+
+    before do
+      stub_request(:get, 'https://api.weather.gov/products/types/AFD/locations/OKX')
+        .to_return(status: 200, body: products_data.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+
+      stub_request(:get, 'https://api.weather.gov/products/abc12345-0000-0000-0000-000000000001')
+        .to_return(status: 200, body: product_data.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'outputs AFD in text format' do
+      output = capture_stdout { described_class.start(['afd', 'OKX', '--format', 'text']) }
+      expect(output).to include('AFD OKX')
+      expect(output).to include('Area Forecast Discussion')
+      expect(output).to include('National Weather Service New York NY')
+    end
+
+    it 'outputs AFD in JSON format' do
+      output = capture_stdout { described_class.start(['afd', 'OKX', '--format', 'json']) }
+      parsed = JSON.parse(output)
+      expect(parsed['wfo']).to eq('OKX')
+      expect(parsed['product_name']).to eq('Area Forecast Discussion')
+    end
+  end
+
   describe 'categories command' do
     it 'outputs flight categories in text format' do
       output = capture_stdout { described_class.start(['categories', 'KCDW', '--format', 'text']) }

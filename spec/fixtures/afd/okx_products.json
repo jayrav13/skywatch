@@ -1,0 +1,21 @@
+{
+  "@context": ["https://geojson.org/geojson-ld/geojson-context.jsonld"],
+  "@graph": [
+    {
+      "@id": "https://api.weather.gov/products/abc12345-0000-0000-0000-000000000001",
+      "id": "abc12345-0000-0000-0000-000000000001",
+      "productCode": "AFD",
+      "productName": "Area Forecast Discussion",
+      "issuingOffice": "OKX",
+      "issuanceTime": "2026-04-14T07:22:00+00:00"
+    },
+    {
+      "@id": "https://api.weather.gov/products/abc12345-0000-0000-0000-000000000002",
+      "id": "abc12345-0000-0000-0000-000000000002",
+      "productCode": "AFD",
+      "productName": "Area Forecast Discussion",
+      "issuingOffice": "OKX",
+      "issuanceTime": "2026-04-14T01:15:00+00:00"
+    }
+  ]
+}
