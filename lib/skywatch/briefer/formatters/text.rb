@@ -3,7 +3,7 @@
 module Skywatch
   module Briefer
     module Formatters
-      module Text
+      module Text # rubocop:disable Metrics/ModuleLength
         def self.format_metar(metar)
           <<~TEXT
             #{metar.station_id} (#{metar.station_name}) — #{metar.flight_category.upcase}
@@ -104,6 +104,28 @@ module Skywatch
           "#{lines.join("\n")}\n"
         end
 
+        def self.format_airmet(airmet) # rubocop:disable Metrics/AbcSize
+          lines = []
+          lines << "[AIRMET-#{airmet.product.to_s.upcase}] #{airmet.tag} — #{airmet.hazard}"
+          lines << "  Due to: #{airmet.due_to}" if airmet.due_to
+          lines << "  Severity: #{airmet.severity}" if airmet.severity
+          lines << "  Altitude: #{format_airmet_altitude(airmet)}"
+          lines << "  Valid: #{airmet.valid_at&.strftime('%d %b %H%MZ')}"
+          "#{lines.join("\n")}\n"
+        end
+
+        def self.format_airmet_altitude(airmet) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+          return format_altitude_band(nil, nil) if airmet.top.nil? && airmet.base.nil?
+
+          top = airmet.top&.strip
+          base = airmet.base&.strip
+          return format_altitude_band(nil, nil) if top.to_s.empty? && base.to_s.empty?
+
+          base_label = base.to_s.empty? ? 'SFC' : base
+          top_label  = top.to_s.empty?  ? 'UNL' : top
+          "#{base_label} \u2013 #{top_label}"
+        end
+
         def self.format_altitude_band(low_ft, hi_ft)
           low = low_ft ? "#{number_with_commas(low_ft)}'" : 'SFC'
           hi  = hi_ft  ? "#{number_with_commas(hi_ft)}'"  : 'UNL'
@@ -118,7 +140,8 @@ module Skywatch
         end
 
         private_class_method :format_wind, :format_visibility, :format_ceiling, :number_with_commas,
-                             :format_taf_clouds, :winds_aloft_row, :format_altitude_band
+                             :format_taf_clouds, :winds_aloft_row, :format_altitude_band,
+                             :format_airmet_altitude
       end
     end
   end

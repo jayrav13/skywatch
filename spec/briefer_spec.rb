@@ -84,6 +84,23 @@ RSpec.describe Skywatch do
     end
   end
 
+  describe '.airmets' do
+    let(:gairmet_data) { JSON.parse(File.read('spec/fixtures/airmets/gairmet.json')) }
+
+    before do
+      stub_request(:get, 'https://aviationweather.gov/api/data/gairmet')
+        .with(query: { format: 'json' })
+        .to_return(status: 200, body: gairmet_data.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'returns an array of Airmet models' do
+      airmets = described_class.airmets
+      expect(airmets).to be_an(Array)
+      expect(airmets.first).to be_a(Skywatch::Briefer::Models::Airmet)
+    end
+  end
+
   describe '.client' do
     it 'returns a lazy-initialized cached HTTP client' do
       expect(described_class.client).to be_a(Skywatch::Shared::Cache)

@@ -116,6 +116,46 @@ RSpec.describe Skywatch::Briefer::CLI do
     end
   end
 
+  describe 'airmets command' do
+    let(:gairmet_data) { JSON.parse(File.read('spec/fixtures/airmets/gairmet.json')) }
+
+    before do
+      stub_request(:get, 'https://aviationweather.gov/api/data/gairmet')
+        .with(query: { format: 'json' })
+        .to_return(status: 200, body: gairmet_data.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'outputs AIRMETs in text format' do
+      output = capture_stdout { described_class.start(['airmets', '--format', 'text']) }
+      expect(output).to include('AIRMET-SIERRA')
+      expect(output).to include('MT_OBSC')
+    end
+
+    it 'outputs AIRMETs in JSON format' do
+      output = capture_stdout { described_class.start(['airmets', '--format', 'json']) }
+      parsed = JSON.parse(output)
+      expect(parsed).to be_an(Array)
+      expect(parsed.size).to eq(2)
+    end
+
+    it 'filters by --product' do
+      output = capture_stdout { described_class.start(['airmets', '--product', 'sierra', '--format', 'text']) }
+      expect(output).to include('AIRMET-SIERRA')
+      expect(output).not_to include('AIRMET-ZULU')
+    end
+
+    it 'outputs no active message when empty' do
+      Skywatch.reset!
+      stub_request(:get, 'https://aviationweather.gov/api/data/gairmet')
+        .with(query: { format: 'json' })
+        .to_return(status: 200, body: '[]', headers: { 'Content-Type' => 'application/json' })
+
+      output = capture_stdout { described_class.start(['airmets', '--format', 'text']) }
+      expect(output).to include('No active AIRMETs')
+    end
+  end
+
   describe 'categories command' do
     it 'outputs flight categories in text format' do
       output = capture_stdout { described_class.start(['categories', 'KCDW', '--format', 'text']) }

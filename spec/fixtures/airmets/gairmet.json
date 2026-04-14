@@ -1,0 +1,62 @@
+[
+  {
+    "tag": "3E",
+    "forecastHour": 6,
+    "validTime": "2026-03-29T03:00:00.000Z",
+    "hazard": "MT_OBSC",
+    "geometryType": "AREA",
+    "latlonpairs": 8,
+    "frequency": "",
+    "severity": "",
+    "due_to": "MTNS OBSC BY CLDS/BR",
+    "status": "",
+    "top": "",
+    "base": "",
+    "fzltop": "",
+    "fzlbase": "",
+    "level": "",
+    "receiptTime": 1774737035,
+    "issueTime": 1774737000,
+    "expireTime": 1774753200,
+    "product": "SIERRA",
+    "geom": "AREA",
+    "coords": [
+      {"lat": "47.62", "lon": "-69.30"},
+      {"lat": "45.66", "lon": "-68.59"},
+      {"lat": "44.69", "lon": "-70.87"},
+      {"lat": "43.61", "lon": "-72.72"},
+      {"lat": "43.80", "lon": "-73.18"},
+      {"lat": "44.93", "lon": "-74.57"},
+      {"lat": "45.18", "lon": "-71.49"},
+      {"lat": "47.62", "lon": "-69.30"}
+    ]
+  },
+  {
+    "tag": "7A",
+    "forecastHour": 3,
+    "validTime": "2026-03-29T06:00:00.000Z",
+    "hazard": "ICE",
+    "geometryType": "AREA",
+    "latlonpairs": 4,
+    "frequency": "",
+    "severity": "LGT-MOD",
+    "due_to": "",
+    "status": "",
+    "top": "FL180",
+    "base": "FL060",
+    "fzltop": "",
+    "fzlbase": "",
+    "level": "",
+    "receiptTime": 1774737035,
+    "issueTime": 1774737000,
+    "expireTime": 1774753200,
+    "product": "ZULU",
+    "geom": "AREA",
+    "coords": [
+      {"lat": "41.00", "lon": "-75.00"},
+      {"lat": "40.00", "lon": "-73.00"},
+      {"lat": "39.00", "lon": "-74.00"},
+      {"lat": "41.00", "lon": "-75.00"}
+    ]
+  }
+]

@@ -98,6 +98,25 @@ module Skywatch
         exit 1
       end
 
+      desc 'airmets', 'List all active AIRMETs'
+      option :product, type: :string, enum: %w[sierra tango zulu],
+                       desc: 'Filter by product type (sierra/tango/zulu)'
+      def airmets # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+        all = Skywatch.airmets
+        all = all.select { |a| a.product.to_s == options[:product] } if options[:product]
+
+        if output_format == 'json'
+          puts JSON.pretty_generate(all.map(&:to_h))
+        elsif all.empty?
+          puts 'No active AIRMETs'
+        else
+          all.each { |a| print Skywatch::Briefer::Formatters::Text.format_airmet(a) }
+        end
+      rescue Skywatch::Error => e
+        warn "Error: #{e.message}"
+        exit 1
+      end
+
       desc 'categories STATION [STATION...]', 'Check flight categories'
       def categories(*stations)
         metars = Skywatch.metar(*stations)

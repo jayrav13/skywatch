@@ -21,6 +21,7 @@ require_relative 'skywatch/briefer/sources/taf'
 require_relative 'skywatch/briefer/sources/pirep'
 require_relative 'skywatch/briefer/sources/winds_aloft'
 require_relative 'skywatch/briefer/sources/sigmet'
+require_relative 'skywatch/briefer/sources/airmet'
 require_relative 'skywatch/briefer/formatters/text'
 require_relative 'skywatch/radar/models/state_vector'
 require_relative 'skywatch/radar/sources/opensky'
@@ -55,6 +56,10 @@ module Skywatch
 
     def sigmets
       Briefer::Sources::Sigmet.new.fetch
+    end
+
+    def airmets
+      Briefer::Sources::Airmet.new.fetch
     end
 
     def flights(lat:, lon:, radius_nm: 50)
