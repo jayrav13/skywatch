@@ -129,20 +129,29 @@ RSpec.describe Skywatch::Briefer::CLI do
     it 'outputs AIRMETs in text format' do
       output = capture_stdout { described_class.start(['airmets', '--format', 'text']) }
       expect(output).to include('AIRMET-SIERRA')
-      expect(output).to include('MT_OBSC')
+      expect(output).to include('AIRMET-TANGO')
+      expect(output).to include('AIRMET-ZULU')
     end
 
     it 'outputs AIRMETs in JSON format' do
       output = capture_stdout { described_class.start(['airmets', '--format', 'json']) }
       parsed = JSON.parse(output)
       expect(parsed).to be_an(Array)
-      expect(parsed.size).to eq(2)
+      expect(parsed.size).to eq(3)
     end
 
-    it 'filters by --product' do
+    it 'filters by --product sierra' do
       output = capture_stdout { described_class.start(['airmets', '--product', 'sierra', '--format', 'text']) }
       expect(output).to include('AIRMET-SIERRA')
       expect(output).not_to include('AIRMET-ZULU')
+      expect(output).not_to include('AIRMET-TANGO')
+    end
+
+    it 'filters by --product tango' do
+      output = capture_stdout { described_class.start(['airmets', '--product', 'tango', '--format', 'json']) }
+      parsed = JSON.parse(output)
+      expect(parsed.size).to eq(1)
+      expect(parsed.first['product']).to eq('tango')
     end
 
     it 'outputs no active message when empty' do

@@ -99,6 +99,11 @@ RSpec.describe Skywatch do
       expect(airmets).to be_an(Array)
       expect(airmets.first).to be_a(Skywatch::Briefer::Models::Airmet)
     end
+
+    it 'returns all three products' do
+      airmets = described_class.airmets
+      expect(airmets.map(&:product)).to contain_exactly(:sierra, :tango, :zulu)
+    end
   end
 
   describe '.client' do

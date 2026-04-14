@@ -20,15 +20,19 @@ RSpec.describe Skywatch::Briefer::Sources::Airmet do
 
     it 'returns all active AIRMETs' do
       airmets = source.fetch
-      expect(airmets.size).to eq(2)
+      expect(airmets.size).to eq(3)
+    end
+
+    it 'returns all three products' do
+      expect(source.fetch.map(&:product)).to contain_exactly(:sierra, :tango, :zulu)
     end
 
     it 'maps fields correctly' do
       airmet = source.fetch.first
-      expect(airmet.tag).to eq('3E')
+      expect(airmet.tag).to eq('1E')
       expect(airmet.product).to eq(:sierra)
-      expect(airmet.hazard).to eq('MT_OBSC')
-      expect(airmet.due_to).to eq('MTNS OBSC BY CLDS/BR')
+      expect(airmet.hazard).to eq('IFR')
+      expect(airmet.due_to).to eq('CIG BLW 010/VIS BLW 3SM PCPN/BR/FG')
     end
 
     it 'parses coords into Position objects' do
