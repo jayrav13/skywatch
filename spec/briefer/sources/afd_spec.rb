@@ -43,5 +43,13 @@ RSpec.describe Skywatch::Briefer::Sources::Afd do
 
       expect { source.fetch('OKX') }.to raise_error(Skywatch::ApiError)
     end
+
+    it 'raises when no products are returned' do
+      stub_request(:get, 'https://api.weather.gov/products/types/AFD/locations/XXX')
+        .to_return(status: 200, body: { '@graph' => [] }.to_json,
+                   headers: { 'Content-Type' => 'application/ld+json' })
+
+      expect { source.fetch('XXX') }.to raise_error(Skywatch::Error, /No AFD/)
+    end
   end
 end

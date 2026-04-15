@@ -16,7 +16,9 @@ module Skywatch
         def fetch(wfo)
           list_path = "/products/types/AFD/locations/#{wfo.upcase}"
           list_data = @client.get(list_path, {}, ttl: TTL)
-          entries = list_data['@graph']
+          entries = list_data['@graph'] || []
+          raise Skywatch::Error, "No AFD available for WFO #{wfo}" if entries.empty?
+
           product_path = URI(entries.first['@id']).path
           product_data = @client.get(product_path, {}, ttl: TTL)
           Skywatch::Briefer::Models::Afd.from_nws(product_data)
