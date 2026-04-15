@@ -115,8 +115,9 @@ module Skywatch
         end
 
         def self.format_afd(afd)
-          header = "AFD #{afd.wfo} — #{afd.product_name} — #{afd.issued_at&.strftime('%d %b %Y %H%MZ')}"
-          "#{header}\n#{afd.text}\n"
+          header = "#{afd.product_name} — WFO #{afd.wfo} (issued #{afd.issued_at.strftime('%d %b %Y %H%MZ')})"
+          rule = '=' * header.length
+          "#{header}\n#{rule}\n#{afd.text}\n"
         end
 
         def self.format_airmet_altitude(airmet) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity

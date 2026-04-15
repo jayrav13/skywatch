@@ -4,7 +4,7 @@ RSpec.describe Skywatch::Briefer::Models::Afd do
   let(:data) { JSON.parse(File.read('spec/fixtures/afd/okx_product.json')) }
 
   describe '.from_nws' do
-    subject(:afd) { described_class.from_nws('OKX', data) }
+    subject(:afd) { described_class.from_nws(data) }
 
     it 'parses the wfo' do
       expect(afd.wfo).to eq('OKX')
@@ -25,7 +25,7 @@ RSpec.describe Skywatch::Briefer::Models::Afd do
   end
 
   describe '#to_h' do
-    subject(:afd) { described_class.from_nws('OKX', data) }
+    subject(:afd) { described_class.from_nws(data) }
 
     it 'returns a hash with key fields' do
       hash = afd.to_h
@@ -37,7 +37,7 @@ RSpec.describe Skywatch::Briefer::Models::Afd do
   end
 
   describe '#to_json' do
-    subject(:afd) { described_class.from_nws('OKX', data) }
+    subject(:afd) { described_class.from_nws(data) }
 
     it 'returns valid JSON' do
       parsed = JSON.parse(afd.to_json)

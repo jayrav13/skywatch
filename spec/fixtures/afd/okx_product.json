@@ -3,7 +3,7 @@
   "@id": "https://api.weather.gov/products/abc12345-0000-0000-0000-000000000001",
   "id": "abc12345-0000-0000-0000-000000000001",
   "wmoCollectiveId": "FXUS61",
-  "issuingOffice": "OKX",
+  "issuingOffice": "KOKX",
   "issuanceTime": "2026-04-14T07:22:00+00:00",
   "productCode": "AFD",
   "productName": "Area Forecast Discussion",

@@ -117,7 +117,7 @@ module Skywatch
         exit 1
       end
 
-      desc 'afd WFO', 'Fetch Area Forecast Discussion for a Weather Forecast Office'
+      desc 'afd WFO', 'Show the latest Area Forecast Discussion for a Weather Forecast Office'
       def afd(wfo)
         forecast = Skywatch.afd(wfo)
 

@@ -166,7 +166,7 @@ RSpec.describe Skywatch::Briefer::CLI do
   end
 
   describe 'afd command' do
-    let(:products_data) { JSON.parse(File.read('spec/fixtures/afd/okx_products.json')) }
+    let(:products_data) { JSON.parse(File.read('spec/fixtures/afd/okx_list.json')) }
     let(:product_data) { JSON.parse(File.read('spec/fixtures/afd/okx_product.json')) }
 
     before do
@@ -181,7 +181,7 @@ RSpec.describe Skywatch::Briefer::CLI do
 
     it 'outputs AFD in text format' do
       output = capture_stdout { described_class.start(['afd', 'OKX', '--format', 'text']) }
-      expect(output).to include('AFD OKX')
+      expect(output).to include('WFO OKX')
       expect(output).to include('Area Forecast Discussion')
       expect(output).to include('National Weather Service New York NY')
     end

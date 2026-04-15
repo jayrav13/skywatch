@@ -3,7 +3,7 @@
 RSpec.describe Skywatch::Briefer::Sources::Afd do
   subject(:source) { described_class.new }
 
-  let(:products_data) { JSON.parse(File.read('spec/fixtures/afd/okx_products.json')) }
+  let(:products_data) { JSON.parse(File.read('spec/fixtures/afd/okx_list.json')) }
   let(:product_data) { JSON.parse(File.read('spec/fixtures/afd/okx_product.json')) }
 
   before do

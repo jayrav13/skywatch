@@ -8,7 +8,9 @@ module Skywatch
       class Afd
         attr_reader :wfo, :product_name, :issued_at, :text
 
-        def self.from_nws(wfo, data)
+        def self.from_nws(data)
+          office = data['issuingOffice'].to_s
+          wfo = office.start_with?('K') ? office[1..] : office
           new(
             wfo: wfo,
             product_name: data['productName'],

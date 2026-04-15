@@ -19,7 +19,7 @@ module Skywatch
           entries = list_data['@graph']
           product_path = URI(entries.first['@id']).path
           product_data = @client.get(product_path, {}, ttl: TTL)
-          Skywatch::Briefer::Models::Afd.from_nws(wfo.upcase, product_data)
+          Skywatch::Briefer::Models::Afd.from_nws(product_data)
         end
       end
     end
