@@ -29,6 +29,9 @@ require_relative 'skywatch/radar/models/state_vector'
 require_relative 'skywatch/radar/sources/opensky'
 require_relative 'skywatch/radar/analysis/proximity'
 require_relative 'skywatch/radar/formatters/text'
+require_relative 'skywatch/mayday/models/emergency'
+require_relative 'skywatch/mayday/sources/emergency'
+require_relative 'skywatch/mayday/formatters/text'
 
 module Skywatch
   class << self
@@ -82,6 +85,10 @@ module Skywatch
       Radar::Sources::Opensky.new.states_by_icao24(icao24)
     end
 
+    def mayday(lat:, lon:, radius_nm: 100)
+      Mayday::Sources::Emergency.new.near(lat: lat, lon: lon, radius_nm: radius_nm)
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?
@@ -98,4 +105,5 @@ end
 
 require_relative 'skywatch/briefer/cli'
 require_relative 'skywatch/radar/cli'
+require_relative 'skywatch/mayday/cli'
 require_relative 'skywatch/cli'
