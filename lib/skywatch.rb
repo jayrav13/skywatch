@@ -29,6 +29,7 @@ require_relative 'skywatch/radar/models/state_vector'
 require_relative 'skywatch/radar/sources/opensky'
 require_relative 'skywatch/radar/analysis/proximity'
 require_relative 'skywatch/radar/formatters/text'
+require_relative 'skywatch/mayday/models/emergency'
 
 module Skywatch
   class << self
