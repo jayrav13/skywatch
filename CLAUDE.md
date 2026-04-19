@@ -36,6 +36,12 @@ Skywatch (top-level module + convenience API)
 skywatch weather metar KCDW
 skywatch weather taf KACK
 skywatch weather pireps KCDW --radius 100
+skywatch weather winds JFK
+skywatch weather sigmets
+skywatch weather airmets --product sierra
+skywatch weather afd OKX
+skywatch weather categories KCDW KEWR
+skywatch weather crosswind KCDW --runway 220
 skywatch radar track UAL1234
 skywatch radar flights 37.62 -122.38
 ```
