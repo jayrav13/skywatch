@@ -85,6 +85,10 @@ module Skywatch
       Radar::Sources::Opensky.new.states_by_icao24(icao24)
     end
 
+    def mayday(lat:, lon:, radius_nm: 100)
+      Mayday::Sources::Emergency.new.near(lat: lat, lon: lon, radius_nm: radius_nm)
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?
