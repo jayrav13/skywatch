@@ -42,6 +42,7 @@ skywatch weather airmets --product sierra
 skywatch weather afd OKX
 skywatch weather categories KCDW KEWR
 skywatch weather crosswind KCDW --runway 220
+skywatch mayday near 40.875 -74.282 --radius 100
 skywatch radar track UAL1234
 skywatch radar flights 37.62 -122.38
 ```
