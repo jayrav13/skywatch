@@ -85,7 +85,7 @@ JFK      2823+09 2723+04 2623-01 2735-15 2841-25 285341 285750 286261
 
 ### Steps
 
-- [ ] **Step 1.1: Save a real text fixture**
+- [x] **Step 1.1: Save a real text fixture**
 
 Save a trimmed but representative text file (header + a handful of station rows including one with sparse data) at `spec/fixtures/winds_aloft/low_level.txt`. Use this exact content:
 
@@ -104,7 +104,7 @@ ABI      2319+17 2310+11 2220+03 2540-12 2347-22 246138 246748 247959
 
 (Note: ACK's 3000ft column is `3014` — wind 300° at 14kt, no temp. JFK and ABI have a blank 3000ft column.)
 
-- [ ] **Step 1.2: Write the failing source spec**
+- [x] **Step 1.2: Write the failing source spec**
 
 Replace `spec/briefer/sources/winds_aloft_spec.rb` with:
 
@@ -160,12 +160,12 @@ RSpec.describe Skywatch::Briefer::Sources::WindsAloft do
 end
 ```
 
-- [ ] **Step 1.3: Run the test, confirm it fails**
+- [x] **Step 1.3: Run the test, confirm it fails**
 
 Run: `bundle exec rspec spec/briefer/sources/winds_aloft_spec.rb`
 Expected: failures (source still calls `@client.get`, parses JSON, blows up on text body).
 
-- [ ] **Step 1.4: Rewrite the source**
+- [x] **Step 1.4: Rewrite the source**
 
 Replace `lib/skywatch/briefer/sources/winds_aloft.rb` with:
 
@@ -232,23 +232,23 @@ module Skywatch
 end
 ```
 
-- [ ] **Step 1.5: Run tests, confirm they pass**
+- [x] **Step 1.5: Run tests, confirm they pass**
 
 Run: `bundle exec rspec spec/briefer/sources/winds_aloft_spec.rb`
 Expected: all green.
 
-- [ ] **Step 1.6: Delete the obsolete JSON fixture**
+- [x] **Step 1.6: Delete the obsolete JSON fixture**
 
 ```bash
 rm spec/fixtures/winds_aloft/low_level.json
 ```
 
-- [ ] **Step 1.7: Run the full suite + rubocop**
+- [x] **Step 1.7: Run the full suite + rubocop**
 
 Run: `bundle exec rake`
 Expected: all green. (If rubocop flags `Metrics/MethodLength` on `rows_for` or `find_station_line`, leave it — the methods are small.)
 
-- [ ] **Step 1.8: Commit**
+- [x] **Step 1.8: Commit**
 
 ```bash
 git add lib/skywatch/briefer/sources/winds_aloft.rb \
@@ -277,7 +277,7 @@ git commit -m "Fix winds aloft source to parse fixed-width text response"
 
 ### Steps
 
-- [ ] **Step 2.1: Save the SIGMET fixture**
+- [x] **Step 2.1: Save the SIGMET fixture**
 
 Create `spec/fixtures/sigmets/active.json` containing an array of two SIGMET objects. Reuse `spec/fixtures/sigmets/convective.json` content for the first entry, and add a second non-convective entry. Exact content:
 
@@ -340,7 +340,7 @@ Create `spec/fixtures/sigmets/active.json` containing an array of two SIGMET obj
 ]
 ```
 
-- [ ] **Step 2.2: Write the failing source spec**
+- [x] **Step 2.2: Write the failing source spec**
 
 Create `spec/briefer/sources/sigmet_spec.rb`:
 
@@ -380,12 +380,12 @@ RSpec.describe Skywatch::Briefer::Sources::Sigmet do
 end
 ```
 
-- [ ] **Step 2.3: Run, confirm fail**
+- [x] **Step 2.3: Run, confirm fail**
 
 Run: `bundle exec rspec spec/briefer/sources/sigmet_spec.rb`
 Expected: `NameError: uninitialized constant Skywatch::Briefer::Sources::Sigmet`.
 
-- [ ] **Step 2.4: Implement the source**
+- [x] **Step 2.4: Implement the source**
 
 Create `lib/skywatch/briefer/sources/sigmet.rb`:
 
@@ -413,7 +413,7 @@ module Skywatch
 end
 ```
 
-- [ ] **Step 2.5: Wire into autoload**
+- [x] **Step 2.5: Wire into autoload**
 
 Edit `lib/skywatch.rb`. After the line `require_relative 'skywatch/briefer/sources/winds_aloft'` add:
 
@@ -421,12 +421,12 @@ Edit `lib/skywatch.rb`. After the line `require_relative 'skywatch/briefer/sourc
 require_relative 'skywatch/briefer/sources/sigmet'
 ```
 
-- [ ] **Step 2.6: Run, confirm pass**
+- [x] **Step 2.6: Run, confirm pass**
 
 Run: `bundle exec rspec spec/briefer/sources/sigmet_spec.rb`
 Expected: all green.
 
-- [ ] **Step 2.7: Add the formatter — failing test first**
+- [x] **Step 2.7: Add the formatter — failing test first**
 
 Add to `spec/briefer/formatters/` a new file `spec/briefer/formatters/text_spec.rb` if it does not exist; otherwise append. (Check first: `ls spec/briefer/formatters/`.) For now, exercise it through the convenience API and CLI specs in later steps — skip a dedicated formatter spec to stay DRY with the existing pattern (no `text_spec.rb` exists today).
 
@@ -465,7 +465,7 @@ Then add `format_altitude_band` to the `private_class_method` list at the bottom
                              :format_taf_clouds, :winds_aloft_row, :format_altitude_band
 ```
 
-- [ ] **Step 2.8: Add convenience API**
+- [x] **Step 2.8: Add convenience API**
 
 Edit `lib/skywatch.rb`. Inside the `class << self` block, after the `winds_aloft` method, add:
 
@@ -475,7 +475,7 @@ Edit `lib/skywatch.rb`. Inside the `class << self` block, after the `winds_aloft
     end
 ```
 
-- [ ] **Step 2.9: Add convenience-API spec**
+- [x] **Step 2.9: Add convenience-API spec**
 
 Append to `spec/briefer_spec.rb` (before the final `end`):
 
@@ -497,7 +497,7 @@ Append to `spec/briefer_spec.rb` (before the final `end`):
   end
 ```
 
-- [ ] **Step 2.10: Add the CLI command**
+- [x] **Step 2.10: Add the CLI command**
 
 Edit `lib/skywatch/briefer/cli.rb`. After the `categories` method (before `private`), add:
 
@@ -519,7 +519,7 @@ Edit `lib/skywatch/briefer/cli.rb`. After the `categories` method (before `priva
       end
 ```
 
-- [ ] **Step 2.11: Add the CLI spec**
+- [x] **Step 2.11: Add the CLI spec**
 
 Append to `spec/cli_spec.rb` (inside the top-level `describe`, before the final `private`/`def capture_stdout`):
 
@@ -548,12 +548,12 @@ Append to `spec/cli_spec.rb` (inside the top-level `describe`, before the final 
   end
 ```
 
-- [ ] **Step 2.12: Run the full suite + rubocop**
+- [x] **Step 2.12: Run the full suite + rubocop**
 
 Run: `bundle exec rake`
 Expected: all green.
 
-- [ ] **Step 2.13: Commit**
+- [x] **Step 2.13: Commit**
 
 ```bash
 git add lib/skywatch/briefer/sources/sigmet.rb \
@@ -587,7 +587,7 @@ git commit -m "Add SIGMET source, formatter, CLI, and convenience API"
 
 ### Steps
 
-- [ ] **Step 3.1: Save the AIRMET fixture**
+- [x] **Step 3.1: Save the AIRMET fixture**
 
 Create `spec/fixtures/airmets/gairmet.json`. We need at least one of each product (SIERRA, TANGO, ZULU) so the `--product` filter spec is meaningful. Use this content:
 
@@ -680,7 +680,7 @@ Create `spec/fixtures/airmets/gairmet.json`. We need at least one of each produc
 ]
 ```
 
-- [ ] **Step 3.2: Write the failing source spec**
+- [x] **Step 3.2: Write the failing source spec**
 
 Create `spec/briefer/sources/airmet_spec.rb`:
 
@@ -713,12 +713,12 @@ RSpec.describe Skywatch::Briefer::Sources::Airmet do
 end
 ```
 
-- [ ] **Step 3.3: Run, confirm fail**
+- [x] **Step 3.3: Run, confirm fail**
 
 Run: `bundle exec rspec spec/briefer/sources/airmet_spec.rb`
 Expected: `NameError: uninitialized constant Skywatch::Briefer::Sources::Airmet`.
 
-- [ ] **Step 3.4: Implement the source**
+- [x] **Step 3.4: Implement the source**
 
 Create `lib/skywatch/briefer/sources/airmet.rb`:
 
@@ -746,7 +746,7 @@ module Skywatch
 end
 ```
 
-- [ ] **Step 3.5: Wire into autoload**
+- [x] **Step 3.5: Wire into autoload**
 
 Edit `lib/skywatch.rb`. After `require_relative 'skywatch/briefer/sources/sigmet'` (added in Task 2), add:
 
@@ -754,12 +754,12 @@ Edit `lib/skywatch.rb`. After `require_relative 'skywatch/briefer/sources/sigmet
 require_relative 'skywatch/briefer/sources/airmet'
 ```
 
-- [ ] **Step 3.6: Run, confirm pass**
+- [x] **Step 3.6: Run, confirm pass**
 
 Run: `bundle exec rspec spec/briefer/sources/airmet_spec.rb`
 Expected: all green.
 
-- [ ] **Step 3.7: Add the formatter**
+- [x] **Step 3.7: Add the formatter**
 
 Add to `lib/skywatch/briefer/formatters/text.rb`. Insert after `format_sigmet` and before `format_altitude_band`:
 
@@ -793,7 +793,7 @@ Add `format_airmet_altitude` to the `private_class_method` list:
                              :format_airmet_altitude
 ```
 
-- [ ] **Step 3.8: Add convenience API**
+- [x] **Step 3.8: Add convenience API**
 
 Edit `lib/skywatch.rb`. After the `sigmets` method added in Task 2, add:
 
@@ -803,7 +803,7 @@ Edit `lib/skywatch.rb`. After the `sigmets` method added in Task 2, add:
     end
 ```
 
-- [ ] **Step 3.9: Add convenience-API spec**
+- [x] **Step 3.9: Add convenience-API spec**
 
 Append to `spec/briefer_spec.rb`:
 
@@ -825,7 +825,7 @@ Append to `spec/briefer_spec.rb`:
   end
 ```
 
-- [ ] **Step 3.10: Add the CLI command**
+- [x] **Step 3.10: Add the CLI command**
 
 Edit `lib/skywatch/briefer/cli.rb`. After the `sigmets` method added in Task 2, add:
 
@@ -849,7 +849,7 @@ Edit `lib/skywatch/briefer/cli.rb`. After the `sigmets` method added in Task 2, 
       end
 ```
 
-- [ ] **Step 3.11: Add the CLI spec**
+- [x] **Step 3.11: Add the CLI spec**
 
 Append to `spec/cli_spec.rb`:
 
@@ -880,12 +880,12 @@ Append to `spec/cli_spec.rb`:
   end
 ```
 
-- [ ] **Step 3.12: Run the full suite + rubocop**
+- [x] **Step 3.12: Run the full suite + rubocop**
 
 Run: `bundle exec rake`
 Expected: all green.
 
-- [ ] **Step 3.13: Commit**
+- [x] **Step 3.13: Commit**
 
 ```bash
 git add lib/skywatch/briefer/sources/airmet.rb \
@@ -929,7 +929,7 @@ The shared HTTP client defaults to `https://aviationweather.gov`. We need a sepa
 
 ### Steps
 
-- [ ] **Step 4.1: Save fixtures**
+- [x] **Step 4.1: Save fixtures**
 
 Create `spec/fixtures/afd/okx_list.json`:
 
@@ -981,7 +981,7 @@ Create `spec/fixtures/afd/okx_product.json`:
 }
 ```
 
-- [ ] **Step 4.2: Write the failing model spec**
+- [x] **Step 4.2: Write the failing model spec**
 
 Create `spec/briefer/models/afd_spec.rb`:
 
@@ -1026,12 +1026,12 @@ RSpec.describe Skywatch::Briefer::Models::Afd do
 end
 ```
 
-- [ ] **Step 4.3: Run, confirm fail**
+- [x] **Step 4.3: Run, confirm fail**
 
 Run: `bundle exec rspec spec/briefer/models/afd_spec.rb`
 Expected: `NameError: uninitialized constant Skywatch::Briefer::Models::Afd`.
 
-- [ ] **Step 4.4: Implement the model**
+- [x] **Step 4.4: Implement the model**
 
 Create `lib/skywatch/briefer/models/afd.rb`:
 
@@ -1082,7 +1082,7 @@ module Skywatch
 end
 ```
 
-- [ ] **Step 4.5: Wire into autoload**
+- [x] **Step 4.5: Wire into autoload**
 
 Edit `lib/skywatch.rb`. After `require_relative 'skywatch/briefer/models/tfr'` add:
 
@@ -1090,12 +1090,12 @@ Edit `lib/skywatch.rb`. After `require_relative 'skywatch/briefer/models/tfr'` a
 require_relative 'skywatch/briefer/models/afd'
 ```
 
-- [ ] **Step 4.6: Run model spec, confirm pass**
+- [x] **Step 4.6: Run model spec, confirm pass**
 
 Run: `bundle exec rspec spec/briefer/models/afd_spec.rb`
 Expected: all green.
 
-- [ ] **Step 4.7: Write the failing source spec**
+- [x] **Step 4.7: Write the failing source spec**
 
 Create `spec/briefer/sources/afd_spec.rb`:
 
@@ -1139,12 +1139,12 @@ RSpec.describe Skywatch::Briefer::Sources::Afd do
 end
 ```
 
-- [ ] **Step 4.8: Run, confirm fail**
+- [x] **Step 4.8: Run, confirm fail**
 
 Run: `bundle exec rspec spec/briefer/sources/afd_spec.rb`
 Expected: `NameError: uninitialized constant Skywatch::Briefer::Sources::Afd`.
 
-- [ ] **Step 4.9: Implement the source**
+- [x] **Step 4.9: Implement the source**
 
 Create `lib/skywatch/briefer/sources/afd.rb`:
 
@@ -1180,7 +1180,7 @@ end
 
 (`URI(...).path` strips host/scheme so the request goes through the configured base URL.)
 
-- [ ] **Step 4.10: Wire into autoload**
+- [x] **Step 4.10: Wire into autoload**
 
 Edit `lib/skywatch.rb`. After `require_relative 'skywatch/briefer/sources/airmet'` (added in Task 3), add:
 
@@ -1188,12 +1188,12 @@ Edit `lib/skywatch.rb`. After `require_relative 'skywatch/briefer/sources/airmet
 require_relative 'skywatch/briefer/sources/afd'
 ```
 
-- [ ] **Step 4.11: Run source spec, confirm pass**
+- [x] **Step 4.11: Run source spec, confirm pass**
 
 Run: `bundle exec rspec spec/briefer/sources/afd_spec.rb`
 Expected: all green.
 
-- [ ] **Step 4.12: Add the formatter**
+- [x] **Step 4.12: Add the formatter**
 
 Add to `lib/skywatch/briefer/formatters/text.rb`. Insert after `format_airmet`:
 
@@ -1205,7 +1205,7 @@ Add to `lib/skywatch/briefer/formatters/text.rb`. Insert after `format_airmet`:
         end
 ```
 
-- [ ] **Step 4.13: Add convenience API**
+- [x] **Step 4.13: Add convenience API**
 
 Edit `lib/skywatch.rb`. After the `airmets` method (added in Task 3), add:
 
@@ -1215,7 +1215,7 @@ Edit `lib/skywatch.rb`. After the `airmets` method (added in Task 3), add:
     end
 ```
 
-- [ ] **Step 4.14: Add convenience-API spec**
+- [x] **Step 4.14: Add convenience-API spec**
 
 Append to `spec/briefer_spec.rb`:
 
@@ -1239,7 +1239,7 @@ Append to `spec/briefer_spec.rb`:
   end
 ```
 
-- [ ] **Step 4.15: Add the CLI command**
+- [x] **Step 4.15: Add the CLI command**
 
 Edit `lib/skywatch/briefer/cli.rb`. After the `airmets` method, add:
 
@@ -1259,7 +1259,7 @@ Edit `lib/skywatch/briefer/cli.rb`. After the `airmets` method, add:
       end
 ```
 
-- [ ] **Step 4.16: Add the CLI spec**
+- [x] **Step 4.16: Add the CLI spec**
 
 Append to `spec/cli_spec.rb`:
 
@@ -1291,12 +1291,12 @@ Append to `spec/cli_spec.rb`:
   end
 ```
 
-- [ ] **Step 4.17: Run the full suite + rubocop**
+- [x] **Step 4.17: Run the full suite + rubocop**
 
 Run: `bundle exec rake`
 Expected: all green.
 
-- [ ] **Step 4.18: Commit**
+- [x] **Step 4.18: Commit**
 
 ```bash
 git add lib/skywatch/briefer/models/afd.rb \
@@ -1318,12 +1318,12 @@ git commit -m "Add AFD model, source, formatter, CLI, and convenience API"
 
 **Files:** none beyond a doc tweak.
 
-- [ ] **Step 5.1: Smoke-test the new CLI commands against fixtures via the test suite**
+- [x] **Step 5.1: Smoke-test the new CLI commands against fixtures via the test suite**
 
 Run: `bundle exec rake`
 Expected: full suite green, rubocop clean.
 
-- [ ] **Step 5.2: Live smoke (optional but recommended)**
+- [ ] **Step 5.2: Live smoke (optional but recommended)** — *not run; optional, and the test suite covers behavior via fixtures.*
 
 Run each command against the live API and eyeball the output:
 
@@ -1336,7 +1336,7 @@ bundle exec exe/skywatch weather winds JFK --format text
 
 If any blow up, file an issue and stop — do not commit fixes blindly.
 
-- [ ] **Step 5.3: Commit (only if README changes were made; otherwise skip)**
+- [x] **Step 5.3: Commit (only if README changes were made; otherwise skip)** — *no README changes were needed; skipped per instruction.*
 
 Skip unless README was actually edited.
 
