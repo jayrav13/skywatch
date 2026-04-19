@@ -105,4 +105,5 @@ end
 
 require_relative 'skywatch/briefer/cli'
 require_relative 'skywatch/radar/cli'
+require_relative 'skywatch/mayday/cli'
 require_relative 'skywatch/cli'
