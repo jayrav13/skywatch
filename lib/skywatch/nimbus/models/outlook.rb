@@ -71,6 +71,25 @@ module Skywatch
 
           geometry.contains?(FACTORY.point(lon, lat))
         end
+
+        def to_h
+          {
+            day: day,
+            label: label,
+            risk_level: risk_level,
+            risk_score: risk_score,
+            description: description,
+            valid_from: valid_from&.iso8601,
+            valid_to: valid_to&.iso8601,
+            issued_at: issued_at&.iso8601,
+            forecaster: forecaster,
+            geometry: geometry && RGeo::GeoJSON.encode(geometry)
+          }
+        end
+
+        def to_json(*)
+          to_h.to_json(*)
+        end
       end
     end
   end

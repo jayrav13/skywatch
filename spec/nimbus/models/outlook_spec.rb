@@ -94,4 +94,33 @@ RSpec.describe Skywatch::Nimbus::Models::Outlook do
       expect(slgt.covers?(lat: 41.4, lon: -74.9)).to be(false)
     end
   end
+
+  describe '#to_h' do
+    let(:feature) { JSON.parse(File.read('spec/fixtures/spc/day1_synthetic.geojson'))['features'].first }
+    let(:outlook) { described_class.from_spc_feature(feature, day: 1) }
+
+    it 'includes classification + timing + forecaster + GeoJSON geometry' do
+      hash = outlook.to_h
+      expect(hash[:day]).to eq(1)
+      expect(hash[:label]).to eq('MRGL')
+      expect(hash[:risk_level]).to eq(:marginal)
+      expect(hash[:risk_score]).to eq(2)
+      expect(hash[:description]).to eq('Marginal Risk')
+      expect(hash[:valid_from]).to eq('2026-04-19T12:00:00Z')
+      expect(hash[:valid_to]).to eq('2026-04-20T12:00:00Z')
+      expect(hash[:issued_at]).to eq('2026-04-19T12:00:00Z')
+      expect(hash[:forecaster]).to eq('GUYER')
+      expect(hash[:geometry]).to be_a(Hash)
+      expect(hash[:geometry]['type']).to eq('MultiPolygon')
+    end
+  end
+
+  describe '#to_json' do
+    let(:feature) { JSON.parse(File.read('spec/fixtures/spc/day1_synthetic.geojson'))['features'].first }
+    let(:outlook) { described_class.from_spc_feature(feature, day: 1) }
+
+    it 'is the JSON encoding of #to_h' do
+      expect(JSON.parse(outlook.to_json)).to eq(JSON.parse(outlook.to_h.to_json))
+    end
+  end
 end
