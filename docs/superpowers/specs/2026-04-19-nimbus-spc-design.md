@@ -32,8 +32,8 @@ Both return small, structured, deterministic lists. No watch loops. No alerting.
 4. **`Nimbus::Sources::StormReport`** — fetches the daily CSV, parses three sections, returns `[StormReport, ...]`.
 5. **`Nimbus::Formatters::Text`** — `format_outlook(outlook)` and `format_storm_report(report)`.
 6. **CLI:**
-   - `skywatch nimbus outlook DAY [--at LAT LON]`
-   - `skywatch nimbus storms [--date YYYYMMDD] [--type tornado|wind|hail] [--near LAT LON --radius N]`
+   - `skywatch nimbus outlook DAY [--at LAT,LON]`
+   - `skywatch nimbus storms [--date YYYYMMDD] [--type tornado|wind|hail] [--near LAT,LON --radius N]`
 7. **Convenience API:**
    - `Skywatch.outlook(day:, at: nil)` → `[Outlook, ...]` (or the single covering `Outlook` when `at:` is given — see Edge Cases)
    - `Skywatch.storms(date: nil, type: nil, near: nil)` → `[StormReport, ...]`
@@ -275,13 +275,13 @@ New Thor subclass, registered alongside `weather`, `radar`, `mayday` in `Skywatc
 
 ```bash
 skywatch nimbus outlook 1                            # all day-1 regions, text
-skywatch nimbus outlook 1 --at 40.688 -74.174        # single covering outlook at that point (or "No outlook covers ...")
+skywatch nimbus outlook 1 --at 40.688,-74.174        # single covering outlook at that point (or "No outlook covers ...")
 skywatch nimbus outlook 2 --format json
 
 skywatch nimbus storms                               # all of today, text
 skywatch nimbus storms --type tornado
 skywatch nimbus storms --date 20260418
-skywatch nimbus storms --near 40.688 -74.174 --radius 100
+skywatch nimbus storms --near 40.688,-74.174 --radius 100
 skywatch nimbus storms --format json
 ```
 

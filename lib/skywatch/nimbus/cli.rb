@@ -10,40 +10,8 @@ module Skywatch
       class_option :format, type: :string, enum: %w[text json],
                             desc: 'Output format (default: text on TTY, json when piped)'
 
-      # Thor treats any argv starting with `-` as an option, so `--at 40.7 -74.0`
-      # loses the negative longitude. Rewrite such pairs into a single =-form
-      # value so negative coordinates survive parsing.
-      def self.start(given_args = ARGV, config = {})
-        super(rewrite_point_args(given_args), config)
-      end
-
-      def self.rewrite_point_args(args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-        out = []
-        i = 0
-        point_flags = %w[--at --near]
-        while i < args.length
-          flag = args[i]
-          if point_flags.include?(flag) && args[i + 1] && args[i + 2] &&
-             numeric?(args[i + 1]) && numeric?(args[i + 2])
-            out << "#{flag}=#{args[i + 1]},#{args[i + 2]}"
-            i += 3
-          else
-            out << args[i]
-            i += 1
-          end
-        end
-        out
-      end
-
-      def self.numeric?(str)
-        Float(str)
-        true
-      rescue ArgumentError, TypeError
-        false
-      end
-
       desc 'outlook DAY', 'SPC categorical convective outlook for day 1, 2, or 3'
-      option :at, type: :string, desc: 'Point query: --at LAT LON — returns the covering outlook only'
+      option :at, type: :string, desc: 'Point query: --at LAT,LON — returns the covering outlook only'
       def outlook(day) # rubocop:disable Metrics/MethodLength
         day_i = Integer(day)
         if options[:at]
@@ -63,7 +31,7 @@ module Skywatch
       option :date, type: :string, desc: 'Report date YYYYMMDD (default: today)'
       option :type, type: :string, enum: %w[tornado wind hail],
                     desc: 'Filter to one report type'
-      option :near, type: :string, desc: 'Point filter: --near LAT LON'
+      option :near, type: :string, desc: 'Point filter: --near LAT,LON'
       option :radius, type: :numeric, default: 100, desc: 'Radius in NM (used with --near)'
       def storms # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         date = options[:date] ? Date.strptime(options[:date], '%Y%m%d') : nil

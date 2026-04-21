@@ -1648,7 +1648,7 @@ RSpec.describe Skywatch::Nimbus::CLI do
 
     it 'with --at returns the highest-risk covering outlook in text format' do
       output = capture_stdout do
-        described_class.start(['outlook', '1', '--at', '40.7', '-74.0', '--format', 'text'])
+        described_class.start(['outlook', '1', '--at', '40.7,-74.0', '--format', 'text'])
       end
       expect(output).to include('OUTLOOK DAY 1: SLGT')
       expect(output).not_to include('OUTLOOK DAY 1: MRGL')
@@ -1656,7 +1656,7 @@ RSpec.describe Skywatch::Nimbus::CLI do
 
     it 'with --at returns the covering outlook in JSON format (single object)' do
       output = capture_stdout do
-        described_class.start(['outlook', '1', '--at', '40.7', '-74.0', '--format', 'json'])
+        described_class.start(['outlook', '1', '--at', '40.7,-74.0', '--format', 'json'])
       end
       parsed = JSON.parse(output)
       expect(parsed).to be_a(Hash)
@@ -1665,14 +1665,14 @@ RSpec.describe Skywatch::Nimbus::CLI do
 
     it 'with --at outside any feature prints a "No outlook covers" message in text format' do
       output = capture_stdout do
-        described_class.start(['outlook', '1', '--at', '30.0', '-40.0', '--format', 'text'])
+        described_class.start(['outlook', '1', '--at', '30.0,-40.0', '--format', 'text'])
       end
       expect(output).to include('No outlook covers 30.0, -40.0')
     end
 
     it 'with --at outside any feature prints "null" in JSON format' do
       output = capture_stdout do
-        described_class.start(['outlook', '1', '--at', '30.0', '-40.0', '--format', 'json'])
+        described_class.start(['outlook', '1', '--at', '30.0,-40.0', '--format', 'json'])
       end
       expect(output.strip).to eq('null')
     end
@@ -1828,7 +1828,7 @@ Append to `spec/nimbus/cli_spec.rb` (inside the outer `RSpec.describe`, before t
 
     it 'filters by --near and --radius' do
       output = capture_stdout do
-        described_class.start(['storms', '--near', '40.7', '-74.0', '--radius', '100', '--format', 'json'])
+        described_class.start(['storms', '--near', '40.7,-74.0', '--radius', '100', '--format', 'json'])
       end
       parsed = JSON.parse(output)
       expect(parsed.length).to eq(3)
@@ -1971,9 +1971,9 @@ Edit `CLAUDE.md` — inside the `## CLI Usage` code fence, add lines for the two
 
 ```
 skywatch nimbus outlook 1
-skywatch nimbus outlook 1 --at 40.688 -74.174
+skywatch nimbus outlook 1 --at 40.688,-74.174
 skywatch nimbus storms
-skywatch nimbus storms --type tornado --near 40.688 -74.174 --radius 100
+skywatch nimbus storms --type tornado --near 40.688,-74.174 --radius 100
 ```
 
 - [ ] **Step 2: Commit**
