@@ -94,6 +94,15 @@ module Skywatch
       Mayday::Sources::Emergency.new.near(lat: lat, lon: lon, radius_nm: radius_nm)
     end
 
+    def outlook(day:, at: nil)
+      outlooks = Nimbus::Sources::Outlook.new.fetch(day: day)
+      return outlooks if at.nil?
+
+      lat, lon = at
+      covering = outlooks.select { |o| o.covers?(lat: lat, lon: lon) }
+      covering.max_by(&:risk_score)
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?
