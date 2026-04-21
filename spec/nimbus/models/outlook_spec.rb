@@ -47,4 +47,32 @@ RSpec.describe Skywatch::Nimbus::Models::Outlook do
       expect { outlook.risk_level }.to raise_error(KeyError)
     end
   end
+
+  describe '.from_spc_feature' do
+    let(:feature) do
+      JSON.parse(File.read('spec/fixtures/spc/day1_synthetic.geojson'))
+          .fetch('features').first
+    end
+
+    it 'builds an Outlook with day + parsed properties' do
+      outlook = described_class.from_spc_feature(feature, day: 1)
+      expect(outlook.day).to eq(1)
+      expect(outlook.label).to eq('MRGL')
+      expect(outlook.issued_at).to eq(Time.utc(2026, 4, 19, 12))
+      expect(outlook.valid_from).to eq(Time.utc(2026, 4, 19, 12))
+      expect(outlook.valid_to).to eq(Time.utc(2026, 4, 20, 12))
+      expect(outlook.forecaster).to eq('GUYER')
+    end
+
+    it 'decodes geometry as an RGeo MultiPolygon' do
+      outlook = described_class.from_spc_feature(feature, day: 1)
+      expect(outlook.geometry).to be_a(RGeo::Feature::MultiPolygon)
+    end
+
+    it 'raises ParseError when geometry is missing' do
+      broken = feature.merge('geometry' => nil)
+      expect { described_class.from_spc_feature(broken, day: 1) }
+        .to raise_error(Skywatch::ParseError)
+    end
+  end
 end

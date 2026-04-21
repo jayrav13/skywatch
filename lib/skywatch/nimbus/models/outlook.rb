@@ -1,9 +1,15 @@
 # frozen_string_literal: true
 
+require 'rgeo'
+require 'rgeo/geo_json'
+require 'time'
+
 module Skywatch
   module Nimbus
     module Models
       class Outlook
+        FACTORY = RGeo::Cartesian.factory(srid: 4326)
+
         RISK_LEVELS = {
           'TSTM' => { level: :general_thunder, score: 1, description: 'General Thunderstorms' },
           'MRGL' => { level: :marginal,        score: 2, description: 'Marginal Risk' },
@@ -14,6 +20,29 @@ module Skywatch
         }.freeze
 
         attr_reader :day, :label, :valid_from, :valid_to, :issued_at, :forecaster, :geometry
+
+        def self.from_spc_feature(feature, day:)
+          geometry_data = feature['geometry']
+          raise Skywatch::ParseError, 'SPC outlook feature missing geometry' if geometry_data.nil?
+
+          props = feature['properties'] || {}
+          new(
+            day: day,
+            label: props['LABEL'],
+            valid_from: parse_time(props['VALID_ISO']),
+            valid_to: parse_time(props['EXPIRE_ISO']),
+            issued_at: parse_time(props['ISSUE_ISO']),
+            forecaster: props['FORECASTER'],
+            geometry: RGeo::GeoJSON.decode(geometry_data, geo_factory: FACTORY)
+          )
+        end
+
+        def self.parse_time(value)
+          return nil if value.nil? || value.empty?
+
+          Time.parse(value).utc
+        end
+        private_class_method :parse_time
 
         def initialize(day:, label:, valid_from:, valid_to:, issued_at:, forecaster:, geometry:)
           @day = day
