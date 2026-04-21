@@ -33,6 +33,7 @@ require_relative 'skywatch/mayday/models/emergency'
 require_relative 'skywatch/mayday/sources/emergency'
 require_relative 'skywatch/mayday/formatters/text'
 require_relative 'skywatch/nimbus/models/outlook'
+require_relative 'skywatch/nimbus/sources/outlook'
 
 module Skywatch
   class << self
