@@ -75,4 +75,23 @@ RSpec.describe Skywatch::Nimbus::Models::Outlook do
         .to raise_error(Skywatch::ParseError)
     end
   end
+
+  describe '#covers?' do
+    let(:features) { JSON.parse(File.read('spec/fixtures/spc/day1_synthetic.geojson'))['features'] }
+    let(:mrgl) { described_class.from_spc_feature(features[0], day: 1) }
+    let(:slgt) { described_class.from_spc_feature(features[1], day: 1) }
+
+    it 'is true for a point inside the polygon' do
+      expect(mrgl.covers?(lat: 40.7, lon: -74.0)).to be(true)
+    end
+
+    it 'is false for a point outside the polygon' do
+      expect(mrgl.covers?(lat: 30.0, lon: -40.0)).to be(false)
+    end
+
+    it 'distinguishes an inner polygon from an outer one' do
+      expect(mrgl.covers?(lat: 41.4, lon: -74.9)).to be(true)
+      expect(slgt.covers?(lat: 41.4, lon: -74.9)).to be(false)
+    end
+  end
 end

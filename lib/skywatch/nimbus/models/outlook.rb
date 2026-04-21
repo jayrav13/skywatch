@@ -65,6 +65,12 @@ module Skywatch
         def description
           RISK_LEVELS.fetch(label)[:description]
         end
+
+        def covers?(lat:, lon:)
+          return false if geometry.nil?
+
+          geometry.contains?(FACTORY.point(lon, lat))
+        end
       end
     end
   end
