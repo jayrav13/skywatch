@@ -36,6 +36,7 @@ require_relative 'skywatch/nimbus/models/outlook'
 require_relative 'skywatch/nimbus/sources/outlook'
 require_relative 'skywatch/nimbus/models/storm_report'
 require_relative 'skywatch/nimbus/sources/storm_report'
+require_relative 'skywatch/nimbus/formatters/text'
 
 module Skywatch
   class << self
