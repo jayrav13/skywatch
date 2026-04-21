@@ -103,6 +103,19 @@ module Skywatch
       covering.max_by(&:risk_score)
     end
 
+    def storms(date: nil, type: nil, near: nil)
+      reports = Nimbus::Sources::StormReport.new.fetch(date: date)
+      reports = reports.select { |r| r.type == type } if type
+      return reports if near.nil?
+
+      lat = near.fetch(:lat)
+      lon = near.fetch(:lon)
+      radius_nm = near.fetch(:radius_nm)
+      reports.select do |r|
+        Radar::Analysis::Proximity.distance_nm(lat, lon, r.latitude, r.longitude) <= radius_nm
+      end
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?

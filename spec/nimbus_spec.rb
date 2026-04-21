@@ -31,4 +31,52 @@ RSpec.describe Skywatch do
       expect(result).to be_nil
     end
   end
+
+  describe '.storms' do
+    let(:csv) { File.read('spec/fixtures/spc/sample.csv') }
+
+    before do
+      stub_request(:get, 'https://www.spc.noaa.gov/climo/reports/today.csv')
+        .to_return(status: 200, body: csv,
+                   headers: { 'Content-Type' => 'text/csv' })
+    end
+
+    it 'returns all reports when called with no filters' do
+      result = described_class.storms
+      expect(result.length).to eq(5)
+    end
+
+    it 'filters by type when :type is given' do
+      result = described_class.storms(type: :wind)
+      expect(result.map(&:type).uniq).to eq([:wind])
+      expect(result.length).to eq(2)
+    end
+
+    it 'filters by proximity when :near is given' do
+      result = described_class.storms(near: { lat: 40.7, lon: -74.0, radius_nm: 100 })
+      expect(result.length).to eq(3)
+      expect(result.map(&:type)).to contain_exactly(:tornado, :wind, :hail)
+    end
+
+    it 'combines :type and :near' do
+      result = described_class.storms(type: :wind, near: { lat: 40.7, lon: -74.0, radius_nm: 100 })
+      expect(result.length).to eq(1)
+      expect(result.first.location).to eq('JERSEY CITY')
+    end
+
+    it 'raises KeyError when :near is missing a required key' do
+      expect {
+        described_class.storms(near: { lat: 40.7, lon: -74.0 })
+      }.to raise_error(KeyError)
+    end
+
+    it 'fetches YYMMDD.csv when :date is given' do
+      stub_request(:get, 'https://www.spc.noaa.gov/climo/reports/260415.csv')
+        .to_return(status: 200, body: csv,
+                   headers: { 'Content-Type' => 'text/csv' })
+
+      described_class.storms(date: Date.new(2026, 4, 15))
+      expect(WebMock).to have_requested(:get, 'https://www.spc.noaa.gov/climo/reports/260415.csv')
+    end
+  end
 end
