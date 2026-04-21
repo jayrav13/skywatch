@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "LABEL": "MRGL",
+        "LABEL2": "Marginal Risk",
+        "ISSUE_ISO": "2026-04-19T12:00:00Z",
+        "VALID_ISO": "2026-04-19T12:00:00Z",
+        "EXPIRE_ISO": "2026-04-20T12:00:00Z",
+        "FORECASTER": "GUYER"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-75.0, 40.0],
+              [-73.0, 40.0],
+              [-73.0, 41.5],
+              [-75.0, 41.5],
+              [-75.0, 40.0]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "LABEL": "SLGT",
+        "LABEL2": "Slight Risk",
+        "ISSUE_ISO": "2026-04-19T12:00:00Z",
+        "VALID_ISO": "2026-04-19T12:00:00Z",
+        "EXPIRE_ISO": "2026-04-20T12:00:00Z",
+        "FORECASTER": "GUYER"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-74.3, 40.5],
+              [-73.7, 40.5],
+              [-73.7, 41.0],
+              [-74.3, 41.0],
+              [-74.3, 40.5]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
