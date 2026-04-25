@@ -23,4 +23,28 @@ RSpec.describe Skywatch::Nimbus::Sources::Alerts do
       )
     end
   end
+
+  describe '#fetch — edge cases' do
+    it 'raises when events is empty' do
+      expect { described_class.new.fetch(at: [0, 0], events: []) }
+        .to raise_error(ArgumentError, /events must be non-empty/)
+    end
+
+    it 'forwards a custom events list to the query' do
+      stub = stub_request(:get, 'https://api.weather.gov/alerts/active')
+             .with(query: hash_including('event' => 'Tornado Warning'))
+             .to_return(status: 200, body: '{"features":[]}', headers: { 'Content-Type' => 'application/geo+json' })
+
+      described_class.new.fetch(at: [0, 0], events: ['Tornado Warning'])
+
+      expect(stub).to have_been_requested
+    end
+
+    it 'returns [] when NWS returns an empty FeatureCollection' do
+      stub_request(:get, %r{https://api\.weather\.gov/alerts/active})
+        .to_return(status: 200, body: '{"features":[]}', headers: { 'Content-Type' => 'application/geo+json' })
+
+      expect(described_class.new.fetch(at: [0, 0])).to eq([])
+    end
+  end
 end
