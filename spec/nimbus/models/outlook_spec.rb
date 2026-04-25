@@ -30,12 +30,12 @@ RSpec.describe Skywatch::Nimbus::Models::Outlook do
       'TSTM' => [:general_thunder, 1, 'General Thunderstorms'],
       'MRGL' => [:marginal,        2, 'Marginal Risk'],
       'SLGT' => [:slight,          3, 'Slight Risk'],
-      'ENH'  => [:enhanced,        4, 'Enhanced Risk'],
-      'MDT'  => [:moderate,        5, 'Moderate Risk'],
+      'ENH' => [:enhanced,        4, 'Enhanced Risk'],
+      'MDT' => [:moderate,        5, 'Moderate Risk'],
       'HIGH' => [:high,            6, 'High Risk']
     }.each do |label, (level, score, description)|
       it "maps #{label} → #{level} / #{score} / #{description.inspect}" do
-        outlook = described_class.new(**attrs.merge(label: label))
+        outlook = described_class.new(**attrs, label: label)
         expect(outlook.risk_level).to eq(level)
         expect(outlook.risk_score).to eq(score)
         expect(outlook.description).to eq(description)
@@ -43,7 +43,7 @@ RSpec.describe Skywatch::Nimbus::Models::Outlook do
     end
 
     it 'raises KeyError for an unknown LABEL' do
-      outlook = described_class.new(**attrs.merge(label: 'XYZ'))
+      outlook = described_class.new(**attrs, label: 'XYZ')
       expect { outlook.risk_level }.to raise_error(KeyError)
     end
   end

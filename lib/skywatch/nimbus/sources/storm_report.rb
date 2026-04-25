@@ -11,8 +11,8 @@ module Skywatch
         TTL = 300
         SECTION_HEADERS = {
           'F_Scale' => :tornado,
-          'Speed'   => :wind,
-          'Size'    => :hail
+          'Speed' => :wind,
+          'Size' => :hail
         }.freeze
 
         def initialize(client: default_client)
@@ -28,7 +28,7 @@ module Skywatch
 
         private
 
-        def parse_sections(body, report_date:)
+        def parse_sections(body, report_date:) # rubocop:disable Metrics/MethodLength
           current_type = nil
           reports = []
 

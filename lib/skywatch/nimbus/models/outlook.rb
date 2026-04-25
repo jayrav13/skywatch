@@ -14,14 +14,14 @@ module Skywatch
           'TSTM' => { level: :general_thunder, score: 1, description: 'General Thunderstorms' },
           'MRGL' => { level: :marginal,        score: 2, description: 'Marginal Risk' },
           'SLGT' => { level: :slight,          score: 3, description: 'Slight Risk' },
-          'ENH'  => { level: :enhanced,        score: 4, description: 'Enhanced Risk' },
-          'MDT'  => { level: :moderate,        score: 5, description: 'Moderate Risk' },
-          'HIGH' => { level: :high,            score: 6, description: 'High Risk' }
+          'ENH' => { level: :enhanced,        score: 4, description: 'Enhanced Risk' },
+          'MDT' => { level: :moderate,        score: 5, description: 'Moderate Risk' },
+          'HIGH' => { level: :high, score: 6, description: 'High Risk' }
         }.freeze
 
         attr_reader :day, :label, :valid_from, :valid_to, :issued_at, :forecaster, :geometry
 
-        def self.from_spc_feature(feature, day:)
+        def self.from_spc_feature(feature, day:) # rubocop:disable Metrics/MethodLength
           geometry_data = feature['geometry']
           raise Skywatch::ParseError, 'SPC outlook feature missing geometry' if geometry_data.nil?
 
@@ -44,7 +44,7 @@ module Skywatch
         end
         private_class_method :parse_time
 
-        def initialize(day:, label:, valid_from:, valid_to:, issued_at:, forecaster:, geometry:)
+        def initialize(day:, label:, valid_from:, valid_to:, issued_at:, forecaster:, geometry:) # rubocop:disable Metrics/ParameterLists
           @day = day
           @label = label
           @valid_from = valid_from
@@ -72,7 +72,7 @@ module Skywatch
           geometry.contains?(FACTORY.point(lon, lat))
         end
 
-        def to_h
+        def to_h # rubocop:disable Metrics/MethodLength
           {
             day: day,
             label: label,

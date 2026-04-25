@@ -14,7 +14,7 @@ module Skywatch
                     :location, :county, :state,
                     :latitude, :longitude, :comments
 
-        def self.from_spc_row(row, type:, report_date:) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+        def self.from_spc_row(row, type:, report_date:) # rubocop:disable Metrics/MethodLength
           hhmm, mag_raw, location, county, state, lat, lon, comments = row
           new(
             time: parse_time(report_date, hhmm),
@@ -30,6 +30,7 @@ module Skywatch
           )
         end
 
+        # rubocop:disable Metrics/ParameterLists
         def initialize(time:, type:, magnitude:, magnitude_raw:,
                        location:, county:, state:,
                        latitude:, longitude:, comments:)
@@ -44,6 +45,7 @@ module Skywatch
           @longitude = longitude
           @comments = comments
         end
+        # rubocop:enable Metrics/ParameterLists
 
         def wind_kt
           return nil unless type == :wind && magnitude
@@ -51,7 +53,7 @@ module Skywatch
           (magnitude * MPH_TO_KT).round(2)
         end
 
-        def to_h
+        def to_h # rubocop:disable Metrics/MethodLength
           {
             time: time&.iso8601,
             type: type,
@@ -78,7 +80,7 @@ module Skywatch
           Time.utc(report_date.year, report_date.month, report_date.day, hh, mm)
         end
 
-        def self.parse_magnitude(raw, type:)
+        def self.parse_magnitude(raw, type:) # rubocop:disable Metrics/CyclomaticComplexity
           return nil if raw.nil? || raw.to_s.strip.empty?
 
           case type

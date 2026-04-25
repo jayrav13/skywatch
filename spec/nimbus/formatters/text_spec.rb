@@ -35,14 +35,14 @@ RSpec.describe Skywatch::Nimbus::Formatters::Text do
     end
 
     it 'renders wind with mph and kt' do
-      row = %w[1910 65 JERSEY\ CITY HUDSON NJ 40.72 -74.05] + ['Downed trees']
+      row = ['1910', '65', 'JERSEY CITY', 'HUDSON', 'NJ', '40.72', '-74.05'] + ['Downed trees']
       line = described_class.format_storm_report(report_for(:wind, row))
       expect(line).to include('WIND 65mph')
       expect(line).to include('kt ~56')
     end
 
     it 'renders hail in inches' do
-      row = %w[2015 175 MANHATTAN NEW\ YORK NY 40.78 -73.97] + ['1.75 inch hail']
+      row = ['2015', '175', 'MANHATTAN', 'NEW YORK', 'NY', '40.78', '-73.97'] + ['1.75 inch hail']
       line = described_class.format_storm_report(report_for(:hail, row))
       expect(line).to include('HAIL 1.75"')
     end

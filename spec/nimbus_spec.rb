@@ -65,9 +65,9 @@ RSpec.describe Skywatch do
     end
 
     it 'raises KeyError when :near is missing a required key' do
-      expect {
+      expect do
         described_class.storms(near: { lat: 40.7, lon: -74.0 })
-      }.to raise_error(KeyError)
+      end.to raise_error(KeyError)
     end
 
     it 'fetches YYMMDD.csv when :date is given' do

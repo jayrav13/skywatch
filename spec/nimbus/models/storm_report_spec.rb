@@ -51,7 +51,7 @@ RSpec.describe Skywatch::Nimbus::Models::StormReport do
     end
 
     it 'parses a wind row (Speed column → magnitude mph Float, raw preserved)' do
-      row = %w[1910 65 JERSEY\ CITY HUDSON NJ 40.72 -74.05] + ['Downed trees']
+      row = ['1910', '65', 'JERSEY CITY', 'HUDSON', 'NJ', '40.72', '-74.05'] + ['Downed trees']
       r = described_class.from_spc_row(row, type: :wind, report_date: report_date)
       expect(r.type).to eq(:wind)
       expect(r.magnitude).to eq(65.0)
@@ -59,7 +59,7 @@ RSpec.describe Skywatch::Nimbus::Models::StormReport do
     end
 
     it 'parses a hail row (Size column → inches Float, raw preserved)' do
-      row = %w[2015 175 MANHATTAN NEW\ YORK NY 40.78 -73.97] + ['1.75 inch hail']
+      row = ['2015', '175', 'MANHATTAN', 'NEW YORK', 'NY', '40.78', '-73.97'] + ['1.75 inch hail']
       r = described_class.from_spc_row(row, type: :hail, report_date: report_date)
       expect(r.type).to eq(:hail)
       expect(r.magnitude).to eq(1.75)
@@ -85,7 +85,7 @@ RSpec.describe Skywatch::Nimbus::Models::StormReport do
     let(:report_date) { Date.new(2026, 4, 19) }
 
     it 'converts mph to knots for wind reports' do
-      row = %w[1910 65 JERSEY\ CITY HUDSON NJ 40.72 -74.05] + ['Downed trees']
+      row = ['1910', '65', 'JERSEY CITY', 'HUDSON', 'NJ', '40.72', '-74.05'] + ['Downed trees']
       r = described_class.from_spc_row(row, type: :wind, report_date: report_date)
       expect(r.wind_kt).to be_within(0.01).of(56.48) # 65 * 0.868976
     end
