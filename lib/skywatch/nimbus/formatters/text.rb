@@ -46,7 +46,44 @@ module Skywatch
           end
         end
 
-        private_class_method :format_time, :label_for, :magnitude_label
+        def self.until_phrase(alert)
+          "until #{alert.expires_at.utc.strftime('%H:%MZ')}"
+        end
+
+        def self.hail_phrase(alert)
+          return nil if alert.hail_size_in.nil?
+
+          format('%<size>.2f" hail', size: alert.hail_size_in)
+        end
+
+        def self.wind_gust_phrase(alert)
+          return nil if alert.wind_gust_kt.nil?
+
+          "#{alert.wind_gust_kt.round}kt wind gust"
+        end
+
+        def self.tornado_phrase(alert)
+          case alert.tornado_detection
+          when :observed        then 'Tornado observed'
+          when :radar_indicated then 'Radar-indicated'
+          end
+        end
+
+        def self.damage_threat_phrase(alert)
+          threat = alert.thunderstorm_damage_threat || alert.flash_flood_damage_threat
+          return nil if threat.nil?
+
+          "#{threat.to_s.capitalize} damage threat"
+        end
+
+        def self.watch_number(alert)
+          match = alert.headline.to_s.match(/\b(?:Tornado|Severe Thunderstorm) Watch (\d+)\b/)
+          match ? match[1].to_i : nil
+        end
+
+        private_class_method :format_time, :label_for, :magnitude_label,
+                             :until_phrase, :hail_phrase, :wind_gust_phrase,
+                             :tornado_phrase, :damage_threat_phrase, :watch_number
       end
     end
   end
