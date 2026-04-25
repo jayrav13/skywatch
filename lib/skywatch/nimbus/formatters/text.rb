@@ -74,9 +74,11 @@ module Skywatch
           parts << tornado_phrase(alert) if tornado_phrase(alert)
 
           measurements = [hail_phrase(alert), wind_gust_phrase(alert)].compact
-          parts << measurements.join(', ') unless measurements.empty?
-
-          parts << damage_threat_phrase(alert) if damage_threat_phrase(alert)
+          if measurements.empty?
+            parts << damage_threat_phrase(alert) if damage_threat_phrase(alert)
+          else
+            parts << measurements.join(', ')
+          end
 
           parts.empty? ? '' : "#{parts.join('; ')}."
         end
