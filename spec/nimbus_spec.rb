@@ -79,4 +79,33 @@ RSpec.describe Skywatch do
       expect(WebMock).to have_requested(:get, 'https://www.spc.noaa.gov/climo/reports/260415.csv')
     end
   end
+
+  describe '.convection' do
+    let(:fixture) { File.read(File.expand_path('fixtures/nws_alerts/multiple_active.json', __dir__)) }
+
+    before do
+      stub_request(:get, %r{https://api\.weather\.gov/alerts/active})
+        .to_return(status: 200, body: fixture, headers: { 'Content-Type' => 'application/geo+json' })
+    end
+
+    it 'returns a Convection aggregate with warnings and watches partitioned' do
+      conv = Skywatch.convection(at: [40.688, -74.174])
+
+      expect(conv).to be_a(Skywatch::Nimbus::Models::Convection)
+      expect(conv.at).to eq([40.688, -74.174])
+      expect(conv.warnings.size).to eq(3)
+      expect(conv.watches.size).to eq(1)
+      expect(conv.active?).to be true
+    end
+
+    it 'forwards events: override to the source' do
+      stub = stub_request(:get, 'https://api.weather.gov/alerts/active')
+             .with(query: hash_including('event' => 'Tornado Warning'))
+             .to_return(status: 200, body: '{"features":[]}', headers: { 'Content-Type' => 'application/geo+json' })
+
+      Skywatch.convection(at: [0, 0], events: ['Tornado Warning'])
+
+      expect(stub).to have_been_requested
+    end
+  end
 end

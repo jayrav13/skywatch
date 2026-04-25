@@ -119,6 +119,20 @@ module Skywatch
       end
     end
 
+    def convection(at:, events: nil)
+      alerts = if events
+                 Nimbus::Sources::Alerts.new.fetch(at: at, events: events)
+               else
+                 Nimbus::Sources::Alerts.new.fetch(at: at)
+               end
+
+      Nimbus::Models::Convection.new(
+        at: at,
+        fetched_at: Time.now.utc,
+        alerts: alerts
+      )
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?
