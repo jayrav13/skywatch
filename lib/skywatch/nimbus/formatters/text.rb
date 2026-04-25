@@ -46,6 +46,41 @@ module Skywatch
           end
         end
 
+        SEVERITY_RANK = { extreme: 4, severe: 3, moderate: 2, minor: 1, unknown: 0 }.freeze
+
+        def self.format_convection(convection)
+          return "NO ACTIVE CONVECTIVE WARNINGS OR WATCHES.\n" unless convection.active?
+
+          ordered = order_alerts(convection.alerts)
+          ordered.map { |a| format_alert(a) }.join
+        end
+
+        def self.order_alerts(alerts)
+          warnings = alerts.select(&:warning?).sort_by.with_index { |a, i| [-SEVERITY_RANK.fetch(a.severity, 0), i] }
+          watches  = alerts.select(&:watch?).sort_by.with_index { |a, i| [-SEVERITY_RANK.fetch(a.severity, 0), i] }
+          warnings + watches
+        end
+
+        def self.format_alert(alert)
+          number = alert.watch? ? watch_number(alert) : nil
+          number_part = number ? " ##{number}" : ''
+          base = "#{alert.event.upcase}#{number_part} — #{alert.area_description} #{until_phrase(alert)}."
+          extras = build_extras(alert)
+          extras.empty? ? "#{base}\n" : "#{base} #{extras}\n"
+        end
+
+        def self.build_extras(alert)
+          parts = []
+          parts << tornado_phrase(alert) if tornado_phrase(alert)
+
+          measurements = [hail_phrase(alert), wind_gust_phrase(alert)].compact
+          parts << measurements.join(', ') unless measurements.empty?
+
+          parts << damage_threat_phrase(alert) if damage_threat_phrase(alert)
+
+          parts.empty? ? '' : "#{parts.join('; ')}."
+        end
+
         def self.until_phrase(alert)
           "until #{alert.expires_at.utc.strftime('%H:%MZ')}"
         end
@@ -83,7 +118,8 @@ module Skywatch
 
         private_class_method :format_time, :label_for, :magnitude_label,
                              :until_phrase, :hail_phrase, :wind_gust_phrase,
-                             :tornado_phrase, :damage_threat_phrase, :watch_number
+                             :tornado_phrase, :damage_threat_phrase, :watch_number,
+                             :order_alerts, :format_alert, :build_extras
       end
     end
   end

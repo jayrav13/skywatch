@@ -54,6 +54,57 @@ RSpec.describe Skywatch::Nimbus::Formatters::Text do
     end
   end
 
+  describe '.format_convection' do
+    def alert(**attrs)
+      Skywatch::Nimbus::Models::ConvectiveAlert.new(**attrs)
+    end
+
+    it 'renders one line per alert in briefer cadence' do
+      tor = alert(
+        kind: :warning, severity: :extreme, event: 'Tornado Warning',
+        expires_at: Time.utc(2026, 4, 25, 19, 30), area_description: 'Essex, NJ',
+        hail_size_in: 1.5, wind_gust_mph: 65.0, wind_gust_kt: 56.48,
+        tornado_detection: :radar_indicated, headline: 'Tornado Warning ...'
+      )
+      svr = alert(
+        kind: :warning, severity: :severe, event: 'Severe Thunderstorm Warning',
+        expires_at: Time.utc(2026, 4, 25, 20, 0), area_description: 'Bergen, NJ',
+        hail_size_in: 1.0, wind_gust_mph: 52.0, wind_gust_kt: 45.19,
+        headline: 'Severe Thunderstorm Warning ...'
+      )
+      ffw = alert(
+        kind: :warning, severity: :severe, event: 'Flash Flood Warning',
+        expires_at: Time.utc(2026, 4, 25, 23, 0), area_description: 'Hudson, NJ',
+        flash_flood_damage_threat: :considerable, headline: 'Flash Flood Warning ...'
+      )
+      watch = alert(
+        kind: :watch, severity: :severe, event: 'Tornado Watch',
+        expires_at: Time.utc(2026, 4, 25, 22, 0), area_description: 'NJ; NY; CT',
+        headline: 'Tornado Watch 142 issued ...'
+      )
+
+      conv = Skywatch::Nimbus::Models::Convection.new(
+        at: [40.688, -74.174], fetched_at: Time.now.utc,
+        alerts: [svr, ffw, tor, watch] # intentionally out of severity order
+      )
+
+      output = Skywatch::Nimbus::Formatters::Text.format_convection(conv)
+
+      expect(output).to eq(<<~BRIEF)
+        TORNADO WARNING — Essex, NJ until 19:30Z. Radar-indicated; 1.50" hail, 56kt wind gust.
+        SEVERE THUNDERSTORM WARNING — Bergen, NJ until 20:00Z. 1.00" hail, 45kt wind gust.
+        FLASH FLOOD WARNING — Hudson, NJ until 23:00Z. Considerable damage threat.
+        TORNADO WATCH #142 — NJ; NY; CT until 22:00Z.
+      BRIEF
+    end
+
+    it 'returns the empty-state line when no alerts are active' do
+      conv = Skywatch::Nimbus::Models::Convection.new(at: [0, 0], fetched_at: Time.now.utc, alerts: [])
+      expect(Skywatch::Nimbus::Formatters::Text.format_convection(conv))
+        .to eq("NO ACTIVE CONVECTIVE WARNINGS OR WATCHES.\n")
+    end
+  end
+
   describe 'convection phrase helpers' do
     let(:warning) do
       Skywatch::Nimbus::Models::ConvectiveAlert.new(
