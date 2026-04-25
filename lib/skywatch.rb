@@ -36,6 +36,7 @@ require_relative 'skywatch/nimbus/models/outlook'
 require_relative 'skywatch/nimbus/sources/outlook'
 require_relative 'skywatch/nimbus/models/storm_report'
 require_relative 'skywatch/nimbus/models/convective_alert'
+require_relative 'skywatch/nimbus/models/convection'
 require_relative 'skywatch/nimbus/sources/storm_report'
 require_relative 'skywatch/nimbus/formatters/text'
 
