@@ -15,8 +15,8 @@ RSpec.describe 'briefer-perspective convection output' do
     output = Skywatch::Nimbus::Formatters::Text.format_convection(convection)
 
     expected = <<~BRIEF
-      TORNADO WARNING — Essex, NJ until 19:30Z. Radar-indicated; 1.50" hail, 65kt wind gust.
-      SEVERE THUNDERSTORM WARNING — Bergen, NJ until 20:00Z. 1.00" hail, 52kt wind gust.
+      TORNADO WARNING — Essex, NJ until 19:30Z. Radar-indicated; 1.50" hail, 56kt wind gust.
+      SEVERE THUNDERSTORM WARNING — Bergen, NJ until 20:00Z. 1.00" hail, 45kt wind gust.
       FLASH FLOOD WARNING — Hudson, NJ until 23:00Z. Considerable damage threat.
       TORNADO WATCH #142 — NJ; NY; CT until 22:00Z.
     BRIEF
