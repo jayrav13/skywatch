@@ -38,6 +38,7 @@ require_relative 'skywatch/nimbus/models/storm_report'
 require_relative 'skywatch/nimbus/models/convective_alert'
 require_relative 'skywatch/nimbus/models/convection'
 require_relative 'skywatch/nimbus/sources/storm_report'
+require_relative 'skywatch/nimbus/sources/alerts'
 require_relative 'skywatch/nimbus/formatters/text'
 
 module Skywatch
