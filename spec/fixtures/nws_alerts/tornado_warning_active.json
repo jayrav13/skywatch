@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.tor-warn-1",
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74.30,40.65],[-74.05,40.65],[-74.05,40.85],[-74.30,40.85],[-74.30,40.65]]]
+      },
+      "properties": {
+        "id": "urn:oid:2.49.0.1.840.0.tor-warn-1",
+        "areaDesc": "Essex, NJ",
+        "sent": "2026-04-25T18:30:00+00:00",
+        "effective": "2026-04-25T18:30:00+00:00",
+        "onset": "2026-04-25T18:30:00+00:00",
+        "expires": "2026-04-25T19:30:00+00:00",
+        "ends": "2026-04-25T19:30:00+00:00",
+        "severity": "Extreme",
+        "certainty": "Observed",
+        "urgency": "Immediate",
+        "event": "Tornado Warning",
+        "headline": "Tornado Warning issued April 25 at 2:30PM EDT until April 25 at 3:30PM EDT by NWS New York NY",
+        "description": "TORNADO WARNING IN EFFECT UNTIL 330 PM EDT ...",
+        "parameters": {
+          "maxHailSize": ["1.50"],
+          "maxWindGust": ["65 MPH"],
+          "tornadoDetection": ["RADAR INDICATED"],
+          "thunderstormDamageThreat": ["CONSIDERABLE"]
+        }
+      }
+    }
+  ]
+}
