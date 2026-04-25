@@ -115,4 +115,45 @@ RSpec.describe Skywatch::Nimbus::Models::ConvectiveAlert do
       expect(alert.certainty).to eq(:unknown)
     end
   end
+
+  describe '.from_nws_feature — parameter tags' do
+    def feature_for(name)
+      JSON.parse(File.read(File.expand_path("../../fixtures/nws_alerts/#{name}", __dir__)))
+          .fetch('features').first
+    end
+
+    it 'parses hail, wind gust, tornado detection, and damage threat from a TOR Warning' do
+      alert = described_class.from_nws_feature(feature_for('tornado_warning_active.json'))
+
+      expect(alert.hail_size_in).to eq(1.5)
+      expect(alert.wind_gust_mph).to eq(65.0)
+      expect(alert.wind_gust_kt).to be_within(0.5).of(56.5)
+      expect(alert.tornado_detection).to eq(:radar_indicated)
+      expect(alert.thunderstorm_damage_threat).to eq(:considerable)
+    end
+
+    it 'parses flash flood damage threat from an FFW' do
+      alert = described_class.from_nws_feature(feature_for('flash_flood_warning_active.json'))
+
+      expect(alert.flash_flood_damage_threat).to eq(:considerable)
+      expect(alert.hail_size_in).to be_nil
+      expect(alert.wind_gust_mph).to be_nil
+    end
+
+    it 'leaves all tags nil when parameters block is absent' do
+      alert = described_class.from_nws_feature(feature_for('missing_parameters.json'))
+
+      expect(alert.hail_size_in).to be_nil
+      expect(alert.wind_gust_mph).to be_nil
+      expect(alert.wind_gust_kt).to be_nil
+      expect(alert.tornado_detection).to be_nil
+      expect(alert.thunderstorm_damage_threat).to be_nil
+      expect(alert.raw_parameters).to eq({})
+    end
+
+    it 'preserves raw_parameters for debugging' do
+      alert = described_class.from_nws_feature(feature_for('tornado_warning_active.json'))
+      expect(alert.raw_parameters).to include('maxHailSize', 'maxWindGust', 'tornadoDetection')
+    end
+  end
 end

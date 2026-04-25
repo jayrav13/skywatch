@@ -6,7 +6,7 @@ require 'rgeo/geo_json'
 module Skywatch
   module Nimbus
     module Models
-      class ConvectiveAlert
+      class ConvectiveAlert # rubocop:disable Metrics/ClassLength
         ATTRS = %i[
           id kind event headline description
           severity certainty urgency
@@ -34,6 +34,7 @@ module Skywatch
         def self.from_nws_feature(feature) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           props = feature.fetch('properties')
           event = props['event'].to_s
+          params = parse_parameters(props['parameters'] || {})
 
           new(
             id: props['id'] || feature['id'],
@@ -51,12 +52,7 @@ module Skywatch
             ends_at: parse_time(props['ends']),
             area_description: props['areaDesc'].to_s,
             geometry: parse_geometry(feature['geometry']),
-            hail_size_in: nil,
-            wind_gust_mph: nil,
-            wind_gust_kt: nil,
-            tornado_detection: nil,
-            thunderstorm_damage_threat: nil,
-            flash_flood_damage_threat: nil,
+            **params,
             raw_parameters: props['parameters'] || {}
           )
         end
@@ -90,6 +86,57 @@ module Skywatch
           nil
         end
         private_class_method :parse_geometry
+
+        MPH_TO_KT = 0.868976
+
+        def self.parse_parameters(params) # rubocop:disable Metrics/AbcSize
+          mph = parse_float_prefix(first_value(params['maxWindGust']))
+          {
+            hail_size_in: parse_float_prefix(first_value(params['maxHailSize'])),
+            wind_gust_mph: mph,
+            wind_gust_kt: mph ? (mph * MPH_TO_KT).round(2) : nil,
+            tornado_detection: parse_tornado_detection(first_value(params['tornadoDetection'])),
+            thunderstorm_damage_threat: parse_threat(first_value(params['thunderstormDamageThreat'])),
+            flash_flood_damage_threat: parse_threat(first_value(params['flashFloodDamageThreat']))
+          }
+        end
+        private_class_method :parse_parameters
+
+        def self.first_value(array_or_nil)
+          return nil if array_or_nil.nil? || array_or_nil.empty?
+
+          array_or_nil.first
+        end
+        private_class_method :first_value
+
+        def self.parse_float_prefix(str)
+          return nil if str.nil?
+
+          match = str.to_s.match(/-?\d+(?:\.\d+)?/)
+          match ? match[0].to_f : nil
+        end
+        private_class_method :parse_float_prefix
+
+        TORNADO_DETECTION_MAP = {
+          'OBSERVED' => :observed,
+          'RADAR INDICATED' => :radar_indicated
+        }.freeze
+
+        def self.parse_tornado_detection(str)
+          TORNADO_DETECTION_MAP[str.to_s.upcase]
+        end
+        private_class_method :parse_tornado_detection
+
+        THREAT_MAP = {
+          'CATASTROPHIC' => :catastrophic,
+          'DESTRUCTIVE' => :destructive,
+          'CONSIDERABLE' => :considerable
+        }.freeze
+
+        def self.parse_threat(str)
+          THREAT_MAP[str.to_s.upcase]
+        end
+        private_class_method :parse_threat
 
         def warning?
           kind == :warning
