@@ -32,6 +32,11 @@ require_relative 'skywatch/radar/formatters/text'
 require_relative 'skywatch/mayday/models/emergency'
 require_relative 'skywatch/mayday/sources/emergency'
 require_relative 'skywatch/mayday/formatters/text'
+require_relative 'skywatch/nimbus/models/outlook'
+require_relative 'skywatch/nimbus/sources/outlook'
+require_relative 'skywatch/nimbus/models/storm_report'
+require_relative 'skywatch/nimbus/sources/storm_report'
+require_relative 'skywatch/nimbus/formatters/text'
 
 module Skywatch
   class << self
@@ -89,6 +94,28 @@ module Skywatch
       Mayday::Sources::Emergency.new.near(lat: lat, lon: lon, radius_nm: radius_nm)
     end
 
+    def outlook(day:, at: nil)
+      outlooks = Nimbus::Sources::Outlook.new.fetch(day: day)
+      return outlooks if at.nil?
+
+      lat, lon = at
+      covering = outlooks.select { |o| o.covers?(lat: lat, lon: lon) }
+      covering.max_by(&:risk_score)
+    end
+
+    def storms(date: nil, type: nil, near: nil)
+      reports = Nimbus::Sources::StormReport.new.fetch(date: date)
+      reports = reports.select { |r| r.type == type } if type
+      return reports if near.nil?
+
+      lat = near.fetch(:lat)
+      lon = near.fetch(:lon)
+      radius_nm = near.fetch(:radius_nm)
+      reports.select do |r|
+        Radar::Analysis::Proximity.distance_nm(lat, lon, r.latitude, r.longitude) <= radius_nm
+      end
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?
@@ -106,4 +133,5 @@ end
 require_relative 'skywatch/briefer/cli'
 require_relative 'skywatch/radar/cli'
 require_relative 'skywatch/mayday/cli'
+require_relative 'skywatch/nimbus/cli'
 require_relative 'skywatch/cli'

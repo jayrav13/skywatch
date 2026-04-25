@@ -13,6 +13,9 @@ module Skywatch
     desc 'mayday SUBCOMMAND', 'Emergency-squawk detection (7500/7600/7700)'
     subcommand 'mayday', Skywatch::Mayday::CLI
 
+    desc 'nimbus SUBCOMMAND', 'SPC convective outlooks and storm reports'
+    subcommand 'nimbus', Skywatch::Nimbus::CLI
+
     desc 'version', 'Print version'
     def version
       puts "skywatch #{Skywatch::VERSION}"

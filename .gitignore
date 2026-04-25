@@ -2,6 +2,7 @@
 /tmp/
 /pkg/
 /.worktrees/
+.claude/pending-questions.md
 Gemfile.lock
 *.gem
 .rspec_status
