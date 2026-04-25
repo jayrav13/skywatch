@@ -145,6 +145,41 @@ module Skywatch
         def watch?
           kind == :watch
         end
+
+        def to_h # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+          {
+            id: id,
+            kind: kind,
+            event: event,
+            headline: headline,
+            description: description,
+            severity: severity,
+            certainty: certainty,
+            urgency: urgency,
+            sent_at: iso(sent_at),
+            effective_at: iso(effective_at),
+            onset_at: iso(onset_at),
+            expires_at: iso(expires_at),
+            ends_at: iso(ends_at),
+            area_description: area_description,
+            hail_size_in: hail_size_in,
+            wind_gust_mph: wind_gust_mph,
+            wind_gust_kt: wind_gust_kt,
+            tornado_detection: tornado_detection,
+            thunderstorm_damage_threat: thunderstorm_damage_threat,
+            flash_flood_damage_threat: flash_flood_damage_threat
+          }
+        end
+
+        def to_json(*)
+          to_h.to_json(*)
+        end
+
+        private
+
+        def iso(time)
+          time&.iso8601
+        end
       end
     end
   end

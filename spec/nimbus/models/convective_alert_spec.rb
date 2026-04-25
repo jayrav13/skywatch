@@ -156,4 +156,26 @@ RSpec.describe Skywatch::Nimbus::Models::ConvectiveAlert do
       expect(alert.raw_parameters).to include('maxHailSize', 'maxWindGust', 'tornadoDetection')
     end
   end
+
+  describe '#to_h' do
+    it 'serializes all briefer-relevant fields' do
+      path = File.expand_path('../../fixtures/nws_alerts/tornado_warning_active.json', __dir__)
+      feature = JSON.parse(File.read(path)).fetch('features').first
+      alert = described_class.from_nws_feature(feature)
+      hash = alert.to_h
+
+      expect(hash).to include(
+        kind: :warning,
+        event: 'Tornado Warning',
+        severity: :extreme,
+        area_description: 'Essex, NJ',
+        hail_size_in: 1.5,
+        wind_gust_mph: 65.0,
+        tornado_detection: :radar_indicated,
+        thunderstorm_damage_threat: :considerable
+      )
+      expect(hash[:expires_at]).to eq('2026-04-25T19:30:00Z')
+      expect(hash[:wind_gust_kt]).to be_within(0.5).of(56.5)
+    end
+  end
 end
