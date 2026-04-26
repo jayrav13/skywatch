@@ -35,7 +35,10 @@ require_relative 'skywatch/mayday/formatters/text'
 require_relative 'skywatch/nimbus/models/outlook'
 require_relative 'skywatch/nimbus/sources/outlook'
 require_relative 'skywatch/nimbus/models/storm_report'
+require_relative 'skywatch/nimbus/models/convective_alert'
+require_relative 'skywatch/nimbus/models/convection'
 require_relative 'skywatch/nimbus/sources/storm_report'
+require_relative 'skywatch/nimbus/sources/alerts'
 require_relative 'skywatch/nimbus/formatters/text'
 
 module Skywatch
@@ -114,6 +117,20 @@ module Skywatch
       reports.select do |r|
         Radar::Analysis::Proximity.distance_nm(lat, lon, r.latitude, r.longitude) <= radius_nm
       end
+    end
+
+    def convection(at:, events: nil)
+      alerts = if events
+                 Nimbus::Sources::Alerts.new.fetch(at: at, events: events)
+               else
+                 Nimbus::Sources::Alerts.new.fetch(at: at)
+               end
+
+      Nimbus::Models::Convection.new(
+        at: at,
+        fetched_at: Time.now.utc,
+        alerts: alerts
+      )
     end
 
     def crosswind(station_id, runway_heading:)

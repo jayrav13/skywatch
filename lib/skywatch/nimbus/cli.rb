@@ -48,6 +48,22 @@ module Skywatch
         exit 1
       end
 
+      desc 'convection LAT LON', 'Active radar-driven warnings + watches at point'
+      option :events, type: :string,
+                      desc: 'Comma-separated NWS event names (default: TOR/SVR/FFW Warnings + TOR/SVR Watches)'
+      def convection(lat, lon) # rubocop:disable Metrics/AbcSize
+        events = options[:events]&.split(',')&.map(&:strip)
+        conv = if events && !events.empty?
+                 Skywatch.convection(at: [lat.to_f, lon.to_f], events: events)
+               else
+                 Skywatch.convection(at: [lat.to_f, lon.to_f])
+               end
+        print_convection(conv)
+      rescue Skywatch::Error => e
+        warn "Error: #{e.message}"
+        exit 1
+      end
+
       private
 
       def print_outlook_list(outlooks)
@@ -75,6 +91,14 @@ module Skywatch
           puts 'No storm reports'
         else
           reports.each { |r| print Skywatch::Nimbus::Formatters::Text.format_storm_report(r) }
+        end
+      end
+
+      def print_convection(conv)
+        if output_format == 'json'
+          puts JSON.pretty_generate(conv.to_h)
+        else
+          print Skywatch::Nimbus::Formatters::Text.format_convection(conv)
         end
       end
 

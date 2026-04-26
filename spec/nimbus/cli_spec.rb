@@ -127,6 +127,48 @@ RSpec.describe Skywatch::Nimbus::CLI do
     end
   end
 
+  describe 'convection' do
+    let(:fixture) do
+      File.read(File.expand_path('../fixtures/nws_alerts/multiple_active.json', __dir__))
+    end
+
+    before do
+      stub_request(:get, %r{https://api\.weather\.gov/alerts/active})
+        .to_return(status: 200, body: fixture, headers: { 'Content-Type' => 'application/geo+json' })
+    end
+
+    it 'prints briefer-cadence text by default on a TTY' do
+      allow($stdout).to receive(:tty?).and_return(true)
+      expect { Skywatch::Nimbus::CLI.start(%w[convection 40.688 -74.174]) }
+        .to output(/TORNADO WARNING/).to_stdout
+    end
+
+    it 'prints JSON when --format json is passed' do
+      expect { Skywatch::Nimbus::CLI.start(%w[convection 40.688 -74.174 --format json]) }
+        .to output(/"warnings"/).to_stdout
+    end
+
+    it 'forwards --events filter to the source' do
+      stub = stub_request(:get, 'https://api.weather.gov/alerts/active')
+             .with(query: hash_including('event' => 'Tornado Warning'))
+             .to_return(status: 200, body: '{"features":[]}', headers: { 'Content-Type' => 'application/geo+json' })
+
+      Skywatch::Nimbus::CLI.start(
+        ['convection', '40.688', '-74.174', '--events', 'Tornado Warning', '--format', 'json']
+      )
+
+      expect(stub).to have_been_requested
+    end
+
+    it 'prints the empty-state line on a TTY when nothing is active' do
+      stub_request(:get, %r{https://api\.weather\.gov/alerts/active})
+        .to_return(status: 200, body: '{"features":[]}', headers: { 'Content-Type' => 'application/geo+json' })
+
+      expect { Skywatch::Nimbus::CLI.start(%w[convection 40.688 -74.174 --format text]) }
+        .to output(/NO ACTIVE CONVECTIVE WARNINGS OR WATCHES/).to_stdout
+    end
+  end
+
   private
 
   def capture_stdout
