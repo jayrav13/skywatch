@@ -42,6 +42,7 @@ require_relative 'skywatch/nimbus/sources/alerts'
 require_relative 'skywatch/nimbus/formatters/text'
 require_relative 'skywatch/brief/analysis/airport_locator'
 require_relative 'skywatch/brief/analysis/adverse_filter'
+require_relative 'skywatch/brief/models/brief'
 
 module Skywatch
   class << self
