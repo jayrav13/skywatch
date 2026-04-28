@@ -40,6 +40,7 @@ require_relative 'skywatch/nimbus/models/convection'
 require_relative 'skywatch/nimbus/sources/storm_report'
 require_relative 'skywatch/nimbus/sources/alerts'
 require_relative 'skywatch/nimbus/formatters/text'
+require_relative 'skywatch/brief/analysis/airport_locator'
 
 module Skywatch
   class << self
