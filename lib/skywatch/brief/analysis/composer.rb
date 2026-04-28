@@ -34,22 +34,25 @@ module Skywatch
         def compose(airport:) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
           metar = fetch_metar_or_raise(airport)
           lat, lon = AirportLocator.coordinates_from_metar(metar)
-          wfo = AirportLocator.wfo_for(lat, lon)
+          wfo = wrap_wfo(lat, lon)
 
-          pireps = @pirep_source.fetch(airport, radius_nm: ADVERSE_RADIUS_NM)
-          partitioned = AdverseFilter.partition_pireps(pireps)
+          pirep_attempt = attempt { @pirep_source.fetch(airport, radius_nm: ADVERSE_RADIUS_NM) }
+          partitioned = AdverseFilter.partition_pireps(pirep_attempt[:value] || [])
 
           Models::Brief.new(
             airport: airport.upcase,
             coordinates: [lat, lon],
             wfo: wfo,
             fetched_at: Time.now.utc,
-            adverse_conditions: build_adverse(lat: lat, lon: lon, urgent_pireps: partitioned[:urgent]),
+            adverse_conditions: build_adverse(
+              lat: lat, lon: lon, urgent_pireps: partitioned[:urgent], pirep_attempt: pirep_attempt
+            ),
             vfr_not_recommended: build_vfr(metar),
-            current_conditions: build_current(metar: metar, pireps: partitioned[:informational]),
-            destination_forecast: build_destination(airport),
-            winds_aloft: build_winds(airport),
-            afd: build_afd(wfo)
+            current_conditions: build_current(metar: metar, pirep_attempt: pirep_attempt,
+                                              informational: partitioned[:informational]),
+            destination_forecast: wrap('TAF') { build_destination(airport) },
+            winds_aloft: wrap('winds aloft') { build_winds(airport) },
+            afd: wfo.nil? ? unavailable_afd_for_no_wfo : wrap('AFD') { build_afd(wfo) }
           )
         end
 
@@ -62,27 +65,61 @@ module Skywatch
           metars.first
         end
 
-        def build_adverse(lat:, lon:, urgent_pireps:)
-          sigmets = @sigmet_source.fetch.select { |s| AdverseFilter.covers?(s, lat, lon) }
-          airmets = @airmet_source.fetch.select { |a| AdverseFilter.covers?(a, lat, lon) }
-          alerts = @alerts_source.fetch(at: [lat, lon])
-          all_storms = @storm_source.fetch
-          recent = recent_storms(all_storms)
-          near_storms = AdverseFilter.within(recent, lat: lat, lon: lon, radius_nm: ADVERSE_RADIUS_NM)
-
-          items = adverse_items(sigmets, airmets, urgent_pireps, alerts, near_storms)
-          { available: true, items: items, partial_failures: [] }
+        def wrap_wfo(lat, lon)
+          AirportLocator.wfo_for(lat, lon)
+        rescue StandardError
+          nil
         end
 
-        def adverse_items(sigmets, airmets, urgent_pireps, alerts, near_storms) # rubocop:disable Metrics/AbcSize
+        def unavailable_afd_for_no_wfo
+          { available: false, reason: 'fetch failed: WFO lookup failed' }
+        end
+
+        def attempt
+          { value: yield, error: nil }
+        rescue StandardError => e
+          { value: nil, error: "#{e.class}: #{e.message}" }
+        end
+
+        def wrap(_label)
+          yield
+        rescue StandardError => e
+          { available: false, reason: "fetch failed: #{e.class}: #{e.message}" }
+        end
+
+        # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+        def build_adverse(lat:, lon:, urgent_pireps:, pirep_attempt:)
+          sigmet_attempt = attempt { @sigmet_source.fetch.select { |s| AdverseFilter.covers?(s, lat, lon) } }
+          airmet_attempt = attempt { @airmet_source.fetch.select { |a| AdverseFilter.covers?(a, lat, lon) } }
+          alerts_attempt = attempt { @alerts_source.fetch(at: [lat, lon]) }
+          storm_attempt = attempt do
+            recent = recent_storms(@storm_source.fetch)
+            AdverseFilter.within(recent, lat: lat, lon: lon, radius_nm: ADVERSE_RADIUS_NM)
+          end
+
+          attempts = {
+            'sigmet' => sigmet_attempt, 'airmet' => airmet_attempt,
+            'pirep' => pirep_attempt, 'convective_alert' => alerts_attempt,
+            'storm_report' => storm_attempt
+          }
+          partial_failures = attempts.reject { |_, a| a[:error].nil? }
+                                     .map { |s, a| { source: s, reason: a[:error] } }
+
+          if partial_failures.size == attempts.size
+            return { available: false,
+                     reason: "all adverse sources failed: #{partial_failures.map { |f| f[:source] }.join(', ')}" }
+          end
+
           items = []
-          items.concat(sigmets.map { |s| { kind: 'sigmet' }.merge(s.to_h) })
-          items.concat(airmets.map { |a| { kind: 'airmet' }.merge(a.to_h) })
+          items.concat((sigmet_attempt[:value] || []).map { |s| { kind: 'sigmet' }.merge(s.to_h) })
+          items.concat((airmet_attempt[:value] || []).map { |a| { kind: 'airmet' }.merge(a.to_h) })
           items.concat(urgent_pireps.map { |p| { kind: 'pirep' }.merge(p.to_h) })
-          items.concat(alerts.map { |a| { kind: 'convective_alert' }.merge(a.to_h) })
-          items.concat(near_storms.map { |s| { kind: 'storm_report' }.merge(s.to_h) })
-          items
+          items.concat((alerts_attempt[:value] || []).map { |a| { kind: 'convective_alert' }.merge(a.to_h) })
+          items.concat((storm_attempt[:value] || []).map { |s| { kind: 'storm_report' }.merge(s.to_h) })
+
+          { available: true, items: items, partial_failures: partial_failures }
         end
+        # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
         def recent_storms(storms)
           cutoff = Time.now.utc - (STORM_REPORT_LOOKBACK_HOURS * 3600)
@@ -90,17 +127,16 @@ module Skywatch
         end
 
         def build_vfr(metar) # rubocop:disable Metrics/MethodLength
-          category = metar.flight_category
-          case category
+          case metar.flight_category
           when :lifr, :ifr
-            { available: true, vfr_not_recommended: true, category: category.to_s.upcase,
-              explanation: explanation_for(metar) }
+            { available: true, vfr_not_recommended: true,
+              category: metar.flight_category.to_s.upcase, explanation: explanation_for(metar) }
           when :mvfr
-            { available: true, vfr_not_recommended: false, category: 'MVFR',
-              explanation: "marginal — #{explanation_for(metar)}" }
+            { available: true, vfr_not_recommended: false,
+              category: 'MVFR', explanation: "marginal — #{explanation_for(metar)}" }
           else
-            { available: true, vfr_not_recommended: false, category: 'VFR',
-              explanation: 'VFR conditions' }
+            { available: true, vfr_not_recommended: false,
+              category: 'VFR', explanation: 'VFR conditions' }
           end
         end
 
@@ -111,8 +147,13 @@ module Skywatch
           parts.empty? ? 'see METAR' : parts.join(', ')
         end
 
-        def build_current(metar:, pireps:)
-          { available: true, metar: metar.to_h, pireps: pireps.map(&:to_h) }
+        def build_current(metar:, pirep_attempt:, informational:)
+          if pirep_attempt[:error]
+            { available: true, metar: metar.to_h, pireps: [],
+              partial_failure: { source: 'pirep', reason: pirep_attempt[:error] } }
+          else
+            { available: true, metar: metar.to_h, pireps: informational.map(&:to_h) }
+          end
         end
 
         def build_destination(airport)

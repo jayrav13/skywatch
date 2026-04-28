@@ -103,4 +103,62 @@ RSpec.describe Skywatch::Brief::Analysis::Composer do
     expect { composer.compose(airport: 'KZZZ') }
       .to raise_error(Skywatch::Error, /no METAR for KZZZ/)
   end
+
+  context 'error wrapping' do
+    it 'sets destination_forecast unavailable when TAF source raises' do
+      allow(taf_source).to receive(:fetch).and_raise(Skywatch::ApiError, 'HTTP 500')
+      slot = composer.compose(airport: 'KCDW').destination_forecast
+      expect(slot[:available]).to be false
+      expect(slot[:reason]).to include('fetch failed')
+      expect(slot[:reason]).to include('HTTP 500')
+    end
+
+    it 'sets winds_aloft unavailable when winds source raises' do
+      allow(winds_source).to receive(:fetch).and_raise(StandardError, 'boom')
+      slot = composer.compose(airport: 'KCDW').winds_aloft
+      expect(slot[:available]).to be false
+      expect(slot[:reason]).to include('fetch failed')
+    end
+
+    it 'sets afd unavailable when WFO lookup raises' do
+      allow(Skywatch::Brief::Analysis::AirportLocator)
+        .to receive(:wfo_for).and_raise(Skywatch::Error, 'lookup boom')
+      brief = composer.compose(airport: 'KCDW')
+      expect(brief.afd[:available]).to be false
+      expect(brief.afd[:reason]).to include('fetch failed')
+      expect(brief.wfo).to be_nil
+    end
+
+    it 'sets afd unavailable when AFD fetch raises' do
+      allow(afd_source).to receive(:fetch).and_raise(Skywatch::Error, 'no AFD')
+      slot = composer.compose(airport: 'KCDW').afd
+      expect(slot[:available]).to be false
+      expect(slot[:reason]).to include('fetch failed')
+    end
+
+    it 'records partial_failures on adverse_conditions when one sub-source raises' do
+      allow(sigmet_source).to receive(:fetch).and_raise(StandardError, 'sigmet boom')
+      slot = composer.compose(airport: 'KCDW').adverse_conditions
+      expect(slot[:available]).to be true
+      expect(slot[:partial_failures]).to contain_exactly(
+        hash_including(source: 'sigmet', reason: a_string_including('sigmet boom'))
+      )
+    end
+
+    it 'sets adverse_conditions unavailable when every sub-source raises' do
+      allow(sigmet_source).to receive(:fetch).and_raise(StandardError, 'a')
+      allow(airmet_source).to receive(:fetch).and_raise(StandardError, 'b')
+      allow(pirep_source).to receive(:fetch).and_raise(StandardError, 'c')
+      allow(alerts_source).to receive(:fetch).and_raise(StandardError, 'd')
+      allow(storm_source).to receive(:fetch).and_raise(StandardError, 'e')
+      slot = composer.compose(airport: 'KCDW').adverse_conditions
+      expect(slot[:available]).to be false
+      expect(slot[:reason]).to include('all adverse sources failed')
+    end
+
+    it 'still raises hard when METAR fails (no wrapping)' do
+      allow(metar_source).to receive(:fetch).and_raise(Skywatch::ApiError, 'HTTP 404')
+      expect { composer.compose(airport: 'KZZZ') }.to raise_error(Skywatch::ApiError)
+    end
+  end
 end
