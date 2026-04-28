@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'thor'
+require 'json'
 
 module Skywatch
   class CLI < Thor
@@ -15,6 +16,15 @@ module Skywatch
 
     desc 'nimbus SUBCOMMAND', 'SPC convective outlooks and storm reports'
     subcommand 'nimbus', Skywatch::Nimbus::CLI
+
+    desc 'brief AIRPORT', 'AIM 7-1-5 weather brief composed for AIRPORT'
+    def brief(airport)
+      result = Skywatch.brief(airport: airport)
+      puts JSON.pretty_generate(result.to_h)
+    rescue Skywatch::Error => e
+      warn "Error: #{e.message}"
+      exit 1
+    end
 
     desc 'version', 'Print version'
     def version
