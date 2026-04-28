@@ -46,6 +46,7 @@ skywatch mayday near 40.875 -74.282 --radius 100
 skywatch nimbus outlook 1 --at 40.688,-74.174
 skywatch nimbus storms --type tornado --near 40.688,-74.174 --radius 100
 skywatch nimbus convection 40.688 -74.174
+skywatch brief KCDW
 skywatch radar track UAL1234
 skywatch radar flights 37.62 -122.38
 ```
