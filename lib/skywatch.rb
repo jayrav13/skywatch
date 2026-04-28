@@ -137,6 +137,10 @@ module Skywatch
       )
     end
 
+    def brief(airport:)
+      Brief::Analysis::Composer.new.compose(airport: airport)
+    end
+
     def crosswind(station_id, runway_heading:)
       metars = metar(station_id)
       raise Error, "No METAR available for #{station_id}" if metars.empty?
