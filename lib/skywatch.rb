@@ -139,6 +139,10 @@ module Skywatch
       )
     end
 
+    def smoke(at:)
+      Nimbus::Sources::Smoke.new.fetch(at: at)
+    end
+
     def brief(airport:)
       Brief::Analysis::Composer.new.compose(airport: airport)
     end
