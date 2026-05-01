@@ -40,6 +40,10 @@ require_relative 'skywatch/nimbus/models/convection'
 require_relative 'skywatch/nimbus/sources/storm_report'
 require_relative 'skywatch/nimbus/sources/alerts'
 require_relative 'skywatch/nimbus/formatters/text'
+require_relative 'skywatch/brief/analysis/airport_locator'
+require_relative 'skywatch/brief/analysis/adverse_filter'
+require_relative 'skywatch/brief/models/brief'
+require_relative 'skywatch/brief/analysis/composer'
 
 module Skywatch
   class << self
@@ -131,6 +135,10 @@ module Skywatch
         fetched_at: Time.now.utc,
         alerts: alerts
       )
+    end
+
+    def brief(airport:)
+      Brief::Analysis::Composer.new.compose(airport: airport)
     end
 
     def crosswind(station_id, runway_heading:)

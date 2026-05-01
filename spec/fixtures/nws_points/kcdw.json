@@ -1,0 +1,36 @@
+{
+  "@context": ["https://geojson.org/geojson-ld/geojson-context.jsonld"],
+  "id": "https://api.weather.gov/points/40.8751,-74.2814",
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-74.2814, 40.8751]
+  },
+  "properties": {
+    "@id": "https://api.weather.gov/points/40.8751,-74.2814",
+    "@type": "wx:Point",
+    "cwa": "OKX",
+    "forecastOffice": "https://api.weather.gov/offices/OKX",
+    "gridId": "OKX",
+    "gridX": 33,
+    "gridY": 38,
+    "forecast": "https://api.weather.gov/gridpoints/OKX/33,38/forecast",
+    "forecastHourly": "https://api.weather.gov/gridpoints/OKX/33,38/forecast/hourly",
+    "forecastGridData": "https://api.weather.gov/gridpoints/OKX/33,38",
+    "observationStations": "https://api.weather.gov/gridpoints/OKX/33,38/stations",
+    "relativeLocation": {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-74.262, 40.847]},
+      "properties": {
+        "city": "Caldwell",
+        "state": "NJ",
+        "distance": {"unitCode": "wmoUnit:m", "value": 3500}
+      }
+    },
+    "forecastZone": "https://api.weather.gov/zones/forecast/NJZ103",
+    "county": "https://api.weather.gov/zones/county/NJC013",
+    "fireWeatherZone": "https://api.weather.gov/zones/fire/NJZ103",
+    "timeZone": "America/New_York",
+    "radarStation": "KDIX"
+  }
+}
