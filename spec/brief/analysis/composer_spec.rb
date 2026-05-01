@@ -25,6 +25,7 @@ RSpec.describe Skywatch::Brief::Analysis::Composer do
   let(:afd_source) { instance_double(Skywatch::Briefer::Sources::Afd, fetch: afd_model) }
   let(:alerts_source) { instance_double(Skywatch::Nimbus::Sources::Alerts, fetch: []) }
   let(:storm_source) { instance_double(Skywatch::Nimbus::Sources::StormReport, fetch: []) }
+  let(:smoke_source) { instance_double(Skywatch::Nimbus::Sources::Smoke, fetch: []) }
 
   before do
     allow(Skywatch::Brief::Analysis::AirportLocator).to receive(:wfo_for).and_return('OKX')
@@ -34,7 +35,8 @@ RSpec.describe Skywatch::Brief::Analysis::Composer do
     described_class.new(
       metar_source: metar_source, taf_source: taf_source, pirep_source: pirep_source,
       winds_source: winds_source, sigmet_source: sigmet_source, airmet_source: airmet_source,
-      afd_source: afd_source, alerts_source: alerts_source, storm_source: storm_source
+      afd_source: afd_source, alerts_source: alerts_source, storm_source: storm_source,
+      smoke_source: smoke_source
     )
   end
 
@@ -145,12 +147,32 @@ RSpec.describe Skywatch::Brief::Analysis::Composer do
       )
     end
 
+    it 'records smoke partial_failure when smoke source raises' do
+      allow(smoke_source).to receive(:fetch).and_raise(StandardError, 'smoke boom')
+      slot = composer.compose(airport: 'KCDW').adverse_conditions
+      expect(slot[:available]).to be true
+      expect(slot[:partial_failures]).to contain_exactly(
+        hash_including(source: 'smoke', reason: a_string_including('smoke boom'))
+      )
+    end
+
+    it 'surfaces a smoke plume under items when smoke source returns one' do
+      feature = JSON.parse(File.read('spec/fixtures/hms_smoke/heavy_smoke_at_kmry.json'))
+                    .fetch('features').first
+      plume = Skywatch::Nimbus::Models::Smoke.from_arcgis_feature(feature)
+      allow(smoke_source).to receive(:fetch).and_return([plume])
+      slot = composer.compose(airport: 'KCDW').adverse_conditions
+      expect(slot[:available]).to be true
+      expect(slot[:items].map { |i| i[:kind] }).to include('smoke')
+    end
+
     it 'sets adverse_conditions unavailable when every sub-source raises' do
       allow(sigmet_source).to receive(:fetch).and_raise(StandardError, 'a')
       allow(airmet_source).to receive(:fetch).and_raise(StandardError, 'b')
       allow(pirep_source).to receive(:fetch).and_raise(StandardError, 'c')
       allow(alerts_source).to receive(:fetch).and_raise(StandardError, 'd')
       allow(storm_source).to receive(:fetch).and_raise(StandardError, 'e')
+      allow(smoke_source).to receive(:fetch).and_raise(StandardError, 'f')
       slot = composer.compose(airport: 'KCDW').adverse_conditions
       expect(slot[:available]).to be false
       expect(slot[:reason]).to include('all adverse sources failed')

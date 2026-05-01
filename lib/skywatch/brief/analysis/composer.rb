@@ -18,7 +18,8 @@ module Skywatch
                        airmet_source: Skywatch::Briefer::Sources::Airmet.new,
                        afd_source: Skywatch::Briefer::Sources::Afd.new,
                        alerts_source: Skywatch::Nimbus::Sources::Alerts.new,
-                       storm_source: Skywatch::Nimbus::Sources::StormReport.new)
+                       storm_source: Skywatch::Nimbus::Sources::StormReport.new,
+                       smoke_source: Skywatch::Nimbus::Sources::Smoke.new)
           @metar_source = metar_source
           @taf_source = taf_source
           @pirep_source = pirep_source
@@ -28,6 +29,7 @@ module Skywatch
           @afd_source = afd_source
           @alerts_source = alerts_source
           @storm_source = storm_source
+          @smoke_source = smoke_source
         end
         # rubocop:enable Metrics/ParameterLists
 
@@ -96,11 +98,12 @@ module Skywatch
             recent = recent_storms(@storm_source.fetch)
             AdverseFilter.within(recent, lat: lat, lon: lon, radius_nm: ADVERSE_RADIUS_NM)
           end
+          smoke_attempt = attempt { @smoke_source.fetch(at: [lat, lon]) }
 
           attempts = {
             'sigmet' => sigmet_attempt, 'airmet' => airmet_attempt,
             'pirep' => pirep_attempt, 'convective_alert' => alerts_attempt,
-            'storm_report' => storm_attempt
+            'storm_report' => storm_attempt, 'smoke' => smoke_attempt
           }
           partial_failures = attempts.reject { |_, a| a[:error].nil? }
                                      .map { |s, a| { source: s, reason: a[:error] } }
@@ -116,6 +119,7 @@ module Skywatch
           items.concat(urgent_pireps.map { |p| { kind: 'pirep' }.merge(p.to_h) })
           items.concat((alerts_attempt[:value] || []).map { |a| { kind: 'convective_alert' }.merge(a.to_h) })
           items.concat((storm_attempt[:value] || []).map { |s| { kind: 'storm_report' }.merge(s.to_h) })
+          items.concat((smoke_attempt[:value] || []).map { |s| { kind: 'smoke' }.merge(s.to_h) })
 
           { available: true, items: items, partial_failures: partial_failures }
         end
