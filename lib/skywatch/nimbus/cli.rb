@@ -6,7 +6,7 @@ require 'date'
 
 module Skywatch
   module Nimbus
-    class CLI < Thor
+    class CLI < Thor # rubocop:disable Metrics/ClassLength
       class_option :format, type: :string, enum: %w[text json],
                             desc: 'Output format (default: text on TTY, json when piped)'
 
@@ -64,6 +64,15 @@ module Skywatch
         exit 1
       end
 
+      desc 'smoke LAT LON', 'HMS satellite-detected smoke plumes covering the point'
+      def smoke(lat, lon)
+        plumes = Skywatch.smoke(at: [lat.to_f, lon.to_f])
+        print_smoke(plumes)
+      rescue Skywatch::Error => e
+        warn "Error: #{e.message}"
+        exit 1
+      end
+
       private
 
       def print_outlook_list(outlooks)
@@ -91,6 +100,16 @@ module Skywatch
           puts 'No storm reports'
         else
           reports.each { |r| print Skywatch::Nimbus::Formatters::Text.format_storm_report(r) }
+        end
+      end
+
+      def print_smoke(plumes)
+        if output_format == 'json'
+          puts(plumes.empty? ? '[]' : JSON.pretty_generate(plumes.map(&:to_h)))
+        elsif plumes.empty?
+          puts 'No smoke detected at this point.'
+        else
+          plumes.each { |p| print Skywatch::Nimbus::Formatters::Text.format_smoke(p) }
         end
       end
 
