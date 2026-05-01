@@ -19,6 +19,12 @@ module Skywatch
           "#{label_for(report)} @ #{time} #{loc} #{coords}#{comments}\n"
         end
 
+        def self.format_smoke(plume)
+          valid = "#{format_time(plume.start_time)} → #{format_time(plume.end_time)}"
+          sat = plume.satellite ? " (#{plume.satellite})" : ''
+          "SMOKE #{plume.density_raw}#{sat} — #{valid}\n"
+        end
+
         def self.format_time(time)
           return '---' if time.nil?
 
