@@ -39,6 +39,8 @@ require_relative 'skywatch/nimbus/models/convective_alert'
 require_relative 'skywatch/nimbus/models/convection'
 require_relative 'skywatch/nimbus/sources/storm_report'
 require_relative 'skywatch/nimbus/sources/alerts'
+require_relative 'skywatch/nimbus/models/smoke'
+require_relative 'skywatch/nimbus/sources/smoke'
 require_relative 'skywatch/nimbus/formatters/text'
 require_relative 'skywatch/brief/analysis/airport_locator'
 require_relative 'skywatch/brief/analysis/adverse_filter'
@@ -135,6 +137,10 @@ module Skywatch
         fetched_at: Time.now.utc,
         alerts: alerts
       )
+    end
+
+    def smoke(at:)
+      Nimbus::Sources::Smoke.new.fetch(at: at)
     end
 
     def brief(airport:)

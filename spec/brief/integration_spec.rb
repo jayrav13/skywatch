@@ -33,6 +33,7 @@ RSpec.describe 'Skywatch.brief integration' do
     allow_any_instance_of(Skywatch::Briefer::Sources::Afd).to receive(:fetch).and_return(afd)
     allow_any_instance_of(Skywatch::Nimbus::Sources::Alerts).to receive(:fetch).and_return([])
     allow_any_instance_of(Skywatch::Nimbus::Sources::StormReport).to receive(:fetch).and_return([])
+    allow_any_instance_of(Skywatch::Nimbus::Sources::Smoke).to receive(:fetch).and_return([])
     allow(Skywatch::Brief::Analysis::AirportLocator).to receive(:wfo_for).and_return('OKX')
   end
 
@@ -80,5 +81,24 @@ RSpec.describe 'Skywatch.brief integration' do
     json = Skywatch.brief(airport: 'KCDW').to_json
     parsed = JSON.parse(json)
     expect(parsed['aim_section']).to eq('7-1-5')
+  end
+
+  it 'surfaces a heavy smoke plume in adverse_conditions.items with kind: smoke' do
+    feature = JSON.parse(File.read('spec/fixtures/hms_smoke/heavy_smoke_at_kmry.json'))
+                  .fetch('features').first
+    plume = Skywatch::Nimbus::Models::Smoke.from_arcgis_feature(feature)
+    allow_any_instance_of(Skywatch::Nimbus::Sources::Smoke).to receive(:fetch).and_return([plume])
+
+    hash = Skywatch.brief(airport: 'KCDW').to_h
+
+    smoke_items = hash[:adverse_conditions][:items].select { |i| i[:kind] == 'smoke' }
+    expect(smoke_items.size).to eq(1)
+    expect(smoke_items.first).to include(
+      kind: 'smoke',
+      density: :heavy,
+      density_raw: 'Heavy',
+      density_score: 3,
+      satellite: 'GOES-EAST'
+    )
   end
 end

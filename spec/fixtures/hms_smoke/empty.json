@@ -1,0 +1,14 @@
+{
+  "objectIdFieldName": "FID",
+  "globalIdFieldName": "",
+  "geometryType": "esriGeometryPolygon",
+  "spatialReference": { "wkid": 4326, "latestWkid": 4326 },
+  "fields": [
+    { "name": "FID",       "type": "esriFieldTypeOID",     "alias": "FID" },
+    { "name": "Satellite", "type": "esriFieldTypeString",  "alias": "Satellite" },
+    { "name": "Start",     "type": "esriFieldTypeString",  "alias": "Start" },
+    { "name": "End_",      "type": "esriFieldTypeString",  "alias": "End_" },
+    { "name": "Density",   "type": "esriFieldTypeString",  "alias": "Density" }
+  ],
+  "features": []
+}

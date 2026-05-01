@@ -127,6 +127,59 @@ RSpec.describe Skywatch::Nimbus::CLI do
     end
   end
 
+  describe 'smoke command' do
+    let(:heavy_fixture) { File.read('spec/fixtures/hms_smoke/heavy_smoke_at_kmry.json') }
+    let(:empty_fixture) { File.read('spec/fixtures/hms_smoke/empty.json') }
+
+    it 'prints a one-line text summary on a TTY' do
+      stub_request(:get, %r{services2\.arcgis\.com.*FeatureServer/0/query})
+        .to_return(status: 200, body: heavy_fixture, headers: { 'Content-Type' => 'application/json' })
+
+      output = capture_stdout { described_class.start(%w[smoke 36.587 -121.843 --format text]) }
+      expect(output).to include('SMOKE Heavy')
+      expect(output).to include('GOES-EAST')
+    end
+
+    it 'prints a JSON array when --format json' do
+      stub_request(:get, %r{services2\.arcgis\.com.*FeatureServer/0/query})
+        .to_return(status: 200, body: heavy_fixture, headers: { 'Content-Type' => 'application/json' })
+
+      output = capture_stdout { described_class.start(%w[smoke 36.587 -121.843 --format json]) }
+      parsed = JSON.parse(output)
+      expect(parsed).to be_an(Array)
+      expect(parsed.length).to eq(1)
+      expect(parsed.first['density_raw']).to eq('Heavy')
+    end
+
+    it 'prints a friendly empty message in text mode' do
+      stub_request(:get, %r{services2\.arcgis\.com.*FeatureServer/0/query})
+        .to_return(status: 200, body: empty_fixture, headers: { 'Content-Type' => 'application/json' })
+
+      output = capture_stdout { described_class.start(%w[smoke 37.62 -122.38 --format text]) }
+      expect(output).to include('No smoke detected')
+    end
+
+    it 'prints [] in JSON mode when empty' do
+      stub_request(:get, %r{services2\.arcgis\.com.*FeatureServer/0/query})
+        .to_return(status: 200, body: empty_fixture, headers: { 'Content-Type' => 'application/json' })
+
+      output = capture_stdout { described_class.start(%w[smoke 37.62 -122.38 --format json]) }
+      expect(output.strip).to eq('[]')
+    end
+
+    it 'prints Error: ... and exits 1 when the source raises' do
+      stub_request(:get, %r{services2\.arcgis\.com.*FeatureServer/0/query})
+        .to_return(status: 500, body: '{"error":{"code":500}}')
+
+      stderr = capture_stderr do
+        expect do
+          described_class.start(%w[smoke 37.62 -122.38 --format json])
+        end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+      end
+      expect(stderr).to include('Error:')
+    end
+  end
+
   describe 'convection' do
     let(:fixture) do
       File.read(File.expand_path('../fixtures/nws_alerts/multiple_active.json', __dir__))
@@ -178,5 +231,14 @@ RSpec.describe Skywatch::Nimbus::CLI do
     $stdout.string
   ensure
     $stdout = original
+  end
+
+  def capture_stderr
+    original = $stderr
+    $stderr = StringIO.new
+    yield
+    $stderr.string
+  ensure
+    $stderr = original
   end
 end

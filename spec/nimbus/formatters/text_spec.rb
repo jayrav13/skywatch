@@ -154,4 +154,34 @@ RSpec.describe Skywatch::Nimbus::Formatters::Text do
       expect(Skywatch::Nimbus::Formatters::Text.send(:watch_number, empty_watch)).to be_nil
     end
   end
+
+  describe '.format_smoke' do
+    let(:plume) do
+      Skywatch::Nimbus::Models::Smoke.from_arcgis_feature(
+        JSON.parse(File.read('spec/fixtures/hms_smoke/heavy_smoke_at_kmry.json'))
+            .fetch('features').first
+      )
+    end
+
+    it 'renders density, satellite, and validity window' do
+      line = described_class.format_smoke(plume)
+      expect(line).to start_with('SMOKE Heavy')
+      expect(line).to include('(GOES-EAST)')
+      expect(line).to include('2026-04-30 12:00Z')
+      expect(line).to include('2026-04-30 18:00Z')
+      expect(line).to end_with("\n")
+    end
+
+    it 'omits the satellite parenthetical when satellite is nil' do
+      plume_no_sat = Skywatch::Nimbus::Models::Smoke.new(
+        density_raw: 'Light', satellite: nil,
+        start_time: Time.utc(2026, 4, 30, 12),
+        end_time: Time.utc(2026, 4, 30, 18),
+        geometry: nil
+      )
+      line = described_class.format_smoke(plume_no_sat)
+      expect(line).to start_with('SMOKE Light —')
+      expect(line).not_to include('(')
+    end
+  end
 end
