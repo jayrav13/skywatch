@@ -27,6 +27,19 @@ RSpec.describe Skywatch::Brief::Analysis::AdverseFilter do
       degenerate = Skywatch::Briefer::Models::Sigmet.new(coords: [])
       expect(described_class.covers?(degenerate, 40.875, -74.282)).to be false
     end
+
+    it 'returns false when the polygon is self-intersecting (RGeo InvalidGeometry)' do
+      # Bowtie ring: edges cross — RGeo raises Self-intersection on contains?
+      bowtie = Skywatch::Briefer::Models::Sigmet.new(coords: [
+                                                       Skywatch::Shared::Position.new(lat: 40.0, lon: -74.0),
+                                                       Skywatch::Shared::Position.new(lat: 41.0, lon: -73.0),
+                                                       Skywatch::Shared::Position.new(lat: 40.0, lon: -73.0),
+                                                       Skywatch::Shared::Position.new(lat: 41.0, lon: -74.0),
+                                                       Skywatch::Shared::Position.new(lat: 40.0, lon: -74.0)
+                                                     ])
+      expect { described_class.covers?(bowtie, 40.5, -73.5) }.not_to raise_error
+      expect(described_class.covers?(bowtie, 40.5, -73.5)).to be false
+    end
   end
 
   describe '.within' do

@@ -9,6 +9,8 @@ module Skywatch
           return false if polygon.nil?
 
           polygon.contains?(Skywatch::Shared::Geometry.point(lat, lon))
+        rescue RGeo::Error::InvalidGeometry
+          false
         end
 
         def self.within(items, lat:, lon:, radius_nm:)
