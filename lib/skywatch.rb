@@ -44,6 +44,7 @@ require_relative 'skywatch/nimbus/sources/smoke'
 require_relative 'skywatch/nimbus/formatters/text'
 require_relative 'skywatch/brief/analysis/airport_locator'
 require_relative 'skywatch/brief/analysis/adverse_filter'
+require_relative 'skywatch/brief/analysis/route_corridor'
 require_relative 'skywatch/brief/models/brief'
 require_relative 'skywatch/brief/analysis/composer'
 
@@ -143,8 +144,9 @@ module Skywatch
       Nimbus::Sources::Smoke.new.fetch(at: at)
     end
 
-    def brief(airport: nil, at: nil, departing_at: nil)
-      Brief::Analysis::Composer.new.compose(airport: airport, at: at, departing_at: departing_at)
+    def brief(airport: nil, at: nil, departing_at: nil, from: nil, to: nil)
+      Brief::Analysis::Composer.new.compose(airport: airport, at: at, departing_at: departing_at,
+                                            from: from, to: to)
     end
 
     def crosswind(station_id, runway_heading:)

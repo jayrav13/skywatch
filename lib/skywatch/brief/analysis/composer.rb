@@ -9,6 +9,7 @@ module Skywatch
         ADVERSE_RADIUS_NM = 100
         STORM_REPORT_LOOKBACK_HOURS = 6
         NEAR_STATION_THRESHOLD_NM = 25
+        CORRIDOR_SPACING_NM = 25
 
         # rubocop:disable Metrics/ParameterLists
         def initialize(metar_source: Skywatch::Briefer::Sources::Metar.new,
@@ -34,13 +35,24 @@ module Skywatch
         end
         # rubocop:enable Metrics/ParameterLists
 
-        def compose(airport: nil, at: nil, departing_at: nil)
-          case [airport.nil?, at.nil?]
-          when [false, true] then compose_for_airport(airport, departing_at: departing_at)
-          when [true, false] then compose_for_coords(*at, departing_at: departing_at)
-          else raise ArgumentError, 'must specify exactly one of airport: or at:'
+        # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
+        def compose(airport: nil, at: nil, departing_at: nil, from: nil, to: nil)
+          route = !from.nil? || !to.nil?
+
+          if route
+            raise ArgumentError, 'cannot mix from:/to: with at:' if at
+            raise ArgumentError, 'must specify both from: and to: for a route brief' if from.nil? || to.nil?
+
+            compose_for_route(from, to, departing_at: departing_at)
+          else
+            case [airport.nil?, at.nil?]
+            when [false, true] then compose_for_airport(airport, departing_at: departing_at)
+            when [true, false] then compose_for_coords(*at, departing_at: departing_at)
+            else raise ArgumentError, 'must specify exactly one of airport: or at:'
+            end
           end
         end
+        # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity
 
         private
 
@@ -63,6 +75,35 @@ module Skywatch
                       departing_at: departing_at)
         end
 
+        def compose_for_route(from, to, departing_at: nil) # rubocop:disable Metrics/MethodLength
+          from_metar = fetch_metar_or_raise(from)
+          from_lat, from_lon = AirportLocator.coordinates_from_metar(from_metar)
+
+          to_metar = fetch_metar_or_raise(to)
+          to_lat, to_lon = AirportLocator.coordinates_from_metar(to_metar)
+
+          dist = RouteCorridor.distance_nm(from_lat: from_lat, from_lon: from_lon,
+                                           to_lat: to_lat, to_lon: to_lon)
+          bearing = RouteCorridor.bearing_deg(from_lat: from_lat, from_lon: from_lon,
+                                              to_lat: to_lat, to_lon: to_lon)
+
+          destination_field = {
+            airport: to.upcase,
+            coordinates: [to_lat, to_lon],
+            distance_nm: dist,
+            bearing_deg: bearing.round(1)
+          }
+
+          enroute = build_enroute(from_lat: from_lat, from_lon: from_lon,
+                                  to_lat: to_lat, to_lon: to_lon,
+                                  from_airport: from.upcase, departing_at: departing_at)
+
+          build_brief(airport_id: from.upcase, requested_lat: from_lat, requested_lon: from_lon,
+                      metar: from_metar, note: nil, departing_at: departing_at,
+                      destination_airport: to.upcase, destination_field: destination_field,
+                      enroute_forecast: enroute)
+        end
+
         def nearest_station_note(station_id, distance_nm)
           if distance_nm > NEAR_STATION_THRESHOLD_NM
             "WARNING: nearest reporting station #{station_id} is #{distance_nm} nm " \
@@ -74,11 +115,15 @@ module Skywatch
         end
 
         # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/ParameterLists
-        def build_brief(airport_id:, requested_lat:, requested_lon:, metar:, note:, departing_at: nil)
+        def build_brief(airport_id:, requested_lat:, requested_lon:, metar:, note:, departing_at: nil,
+                        destination_airport: nil, destination_field: nil, enroute_forecast: nil)
           wfo = wrap_wfo(requested_lat, requested_lon)
           pirep_attempt = attempt { @pirep_source.fetch(airport_id, radius_nm: ADVERSE_RADIUS_NM) }
           partitioned = AdverseFilter.partition_pireps(pirep_attempt[:value] || [])
           fcst = winds_fcst_for(departing_at)
+
+          # For route briefs, TAF is for the destination; for single-point, TAF is for the airport.
+          taf_airport = destination_airport || airport_id
 
           Models::Brief.new(
             airport: airport_id,
@@ -93,10 +138,12 @@ module Skywatch
             vfr_not_recommended: build_vfr(metar),
             current_conditions: build_current(metar: metar, pirep_attempt: pirep_attempt,
                                               informational: partitioned[:informational]),
-            destination_forecast: wrap('TAF') { build_destination(airport_id, departing_at: departing_at) },
+            destination_forecast: wrap('TAF') { build_destination(taf_airport, departing_at: departing_at) },
             winds_aloft: wrap('winds aloft') { build_winds(airport_id, fcst: fcst) },
             afd: wfo.nil? ? unavailable_afd_for_no_wfo : wrap('AFD') { build_afd(wfo) },
-            note: note
+            note: note,
+            destination: destination_field,
+            enroute_forecast: enroute_forecast
           )
         end
         # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/ParameterLists
@@ -165,6 +212,118 @@ module Skywatch
           { available: true, items: items, partial_failures: partial_failures }
         end
         # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+        # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+        def build_enroute(from_lat:, from_lon:, to_lat:, to_lon:, from_airport:, departing_at:) # rubocop:disable Lint/UnusedMethodArgument, Metrics/ParameterLists
+          waypoints = RouteCorridor.waypoints(from_lat: from_lat, from_lon: from_lon,
+                                              to_lat: to_lat, to_lon: to_lon,
+                                              spacing_nm: CORRIDOR_SPACING_NM)
+          total_nm = RouteCorridor.distance_nm(from_lat: from_lat, from_lon: from_lon,
+                                               to_lat: to_lat, to_lon: to_lon)
+          bearing = RouteCorridor.bearing_deg(from_lat: from_lat, from_lon: from_lon,
+                                              to_lat: to_lat, to_lon: to_lon)
+
+          all_sigmets = attempt { @sigmet_source.fetch }
+          all_airmets = attempt { @airmet_source.fetch }
+          all_storms = attempt { recent_storms(@storm_source.fetch) }
+          all_pireps = attempt { @pirep_source.fetch(from_airport, radius_nm: total_nm.ceil) }
+
+          sigmet_items = corridor_polygon_items(all_sigmets[:value] || [], waypoints, 'sigmet')
+          airmet_items = corridor_polygon_items(all_airmets[:value] || [], waypoints, 'airmet')
+          pirep_items = corridor_within_items(all_pireps[:value] || [], waypoints, 'pirep')
+          storm_items = corridor_within_items(all_storms[:value] || [], waypoints, 'storm_report')
+          smoke_items = corridor_smoke_items(waypoints, 'smoke')
+          alert_items = corridor_alert_items(waypoints, 'convective_alert')
+
+          partial_failures = []
+          partial_failures << { source: 'sigmet', reason: all_sigmets[:error] } if all_sigmets[:error]
+          partial_failures << { source: 'airmet', reason: all_airmets[:error] } if all_airmets[:error]
+          partial_failures << { source: 'storm_report', reason: all_storms[:error] } if all_storms[:error]
+          partial_failures << { source: 'pirep', reason: all_pireps[:error] } if all_pireps[:error]
+          partial_failures.concat(smoke_items[:failures])
+          partial_failures.concat(alert_items[:failures])
+
+          items = (sigmet_items + airmet_items + pirep_items +
+                   storm_items + smoke_items[:items] + alert_items[:items])
+                  .uniq { |i| enroute_dedupe_key(i) }
+
+          {
+            available: true,
+            items: items,
+            partial_failures: partial_failures,
+            corridor: {
+              waypoints: waypoints.size,
+              spacing_nm: CORRIDOR_SPACING_NM,
+              distance_nm: total_nm,
+              bearing_deg: bearing.round(1)
+            }
+          }
+        end
+        # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+        # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+        def enroute_dedupe_key(item)
+          kind = item[:kind]
+          # polygon products: stable id from tag/id fields
+          case kind
+          when 'sigmet', 'airmet'
+            [kind, item[:hazard] || item[:tag] || item[:id] || item.hash]
+          when 'convective_alert'
+            [kind, item[:id] || item[:event] || item.hash]
+          else
+            # point products: dedupe by kind + raw or observed_at
+            [kind, item[:raw] || item[:observed_at] || item[:time] || item.hash]
+          end
+        end
+        # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+        def corridor_polygon_items(products, waypoints, kind)
+          matching = products.select do |product|
+            waypoints.any? { |lat, lon| AdverseFilter.covers?(product, lat, lon) }
+          end
+          matching.map { |p| { kind: kind }.merge(p.to_h) }
+        end
+
+        def corridor_within_items(items, waypoints, kind)
+          matching = items.select do |item|
+            waypoints.any? do |lat, lon|
+              Skywatch::Radar::Analysis::Proximity.distance_nm(lat, lon, item.latitude, item.longitude) <=
+                CORRIDOR_SPACING_NM
+            end
+          end
+          matching.map { |i| { kind: kind }.merge(i.to_h) }
+        end
+
+        def corridor_smoke_items(waypoints, kind)
+          collect_per_waypoint_items(waypoints, kind) { |lat, lon| @smoke_source.fetch(at: [lat, lon]) }
+        end
+
+        def corridor_alert_items(waypoints, kind)
+          collect_per_waypoint_items(waypoints, kind) { |lat, lon| @alerts_source.fetch(at: [lat, lon]) }
+        end
+
+        def collect_per_waypoint_items(waypoints, kind) # rubocop:disable Metrics/MethodLength
+          seen_hashes = []
+          items = []
+          failures = []
+
+          waypoints.each do |lat, lon|
+            result = attempt { yield(lat, lon) }
+            if result[:error]
+              failures << { source: kind, reason: result[:error] }
+            else
+              (result[:value] || []).each do |obj|
+                h = obj.to_h
+                next if seen_hashes.include?(h)
+
+                seen_hashes << h
+                items << { kind: kind }.merge(h)
+              end
+            end
+          end
+
+          { items: items, failures: failures }
+        end
 
         def recent_storms(storms)
           cutoff = Time.now.utc - (STORM_REPORT_LOOKBACK_HOURS * 3600)

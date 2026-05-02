@@ -134,4 +134,89 @@ RSpec.describe Skywatch::Brief::Models::Brief do
       expect(etd_brief.to_h[:departing_at]).to eq('2026-05-01T14:30:00Z')
     end
   end
+
+  describe 'destination (route briefs)' do
+    let(:destination_field) do
+      { airport: 'KACY', coordinates: [39.457, -74.577], distance_nm: 86.2, bearing_deg: 192.3 }
+    end
+
+    let(:route_brief) do
+      described_class.new(
+        airport: 'KCDW',
+        coordinates: [40.875, -74.282],
+        wfo: 'OKX',
+        fetched_at: Time.utc(2026, 5, 1, 12, 0, 0),
+        adverse_conditions: { available: true, items: [], partial_failures: [] },
+        vfr_not_recommended: slot_available,
+        current_conditions: slot_available,
+        destination_forecast: slot_available,
+        winds_aloft: slot_available,
+        afd: slot_available,
+        destination: destination_field
+      )
+    end
+
+    it 'is nil by default on non-route briefs' do
+      expect(brief.destination).to be_nil
+    end
+
+    it 'is omitted from to_h when nil (non-route brief)' do
+      expect(brief.to_h).not_to include(:destination)
+    end
+
+    it 'is included in to_h when set (route brief)' do
+      hash = route_brief.to_h
+      expect(hash).to include(:destination)
+      expect(hash[:destination][:airport]).to eq('KACY')
+      expect(hash[:destination][:coordinates]).to eq([39.457, -74.577])
+      expect(hash[:destination][:distance_nm]).to eq(86.2)
+      expect(hash[:destination][:bearing_deg]).to eq(192.3)
+    end
+  end
+
+  describe 'enroute_forecast (route briefs)' do
+    it 'defaults to ENROUTE_UNAVAILABLE constant when not given' do
+      expect(brief.to_h[:enroute_forecast]).to eq(
+        available: false,
+        reason: 'single-point brief; route input deferred from MVP'
+      )
+    end
+
+    it 'uses the provided enroute_forecast when set' do
+      enroute_data = { available: true, items: [], partial_failures: [], corridor: { waypoints: 4 } }
+      route_brief = described_class.new(
+        airport: 'KCDW',
+        coordinates: [40.875, -74.282],
+        wfo: 'OKX',
+        fetched_at: Time.utc(2026, 5, 1, 12, 0, 0),
+        adverse_conditions: { available: true, items: [], partial_failures: [] },
+        vfr_not_recommended: slot_available,
+        current_conditions: slot_available,
+        destination_forecast: slot_available,
+        winds_aloft: slot_available,
+        afd: slot_available,
+        enroute_forecast: enroute_data
+      )
+      expect(route_brief.enroute_forecast).to eq(enroute_data)
+      expect(route_brief.to_h[:enroute_forecast]).to eq(enroute_data)
+    end
+
+    it 'does not use the constant when enroute_forecast is explicitly provided' do
+      enroute_data = { available: true, items: [], partial_failures: [], corridor: {} }
+      route_brief = described_class.new(
+        airport: 'KCDW',
+        coordinates: [40.875, -74.282],
+        wfo: 'OKX',
+        fetched_at: Time.utc(2026, 5, 1, 12, 0, 0),
+        adverse_conditions: { available: true, items: [], partial_failures: [] },
+        vfr_not_recommended: slot_available,
+        current_conditions: slot_available,
+        destination_forecast: slot_available,
+        winds_aloft: slot_available,
+        afd: slot_available,
+        enroute_forecast: enroute_data
+      )
+      expect(route_brief.to_h[:enroute_forecast]).not_to include(:reason)
+    end
+  end
 end
