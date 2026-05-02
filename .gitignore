@@ -9,3 +9,6 @@ Gemfile.lock
 .rspec_status
 /briefer/
 /radar/
+site/node_modules/
+site/dist/
+site/.astro/
