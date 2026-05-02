@@ -8,6 +8,7 @@ module Skywatch
       class Composer # rubocop:disable Metrics/ClassLength
         ADVERSE_RADIUS_NM = 100
         STORM_REPORT_LOOKBACK_HOURS = 6
+        NEAR_STATION_THRESHOLD_NM = 25
 
         # rubocop:disable Metrics/ParameterLists
         def initialize(metar_source: Skywatch::Briefer::Sources::Metar.new,
@@ -33,32 +34,69 @@ module Skywatch
         end
         # rubocop:enable Metrics/ParameterLists
 
-        def compose(airport:) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+        def compose(airport: nil, at: nil)
+          case [airport.nil?, at.nil?]
+          when [false, true] then compose_for_airport(airport)
+          when [true, false] then compose_for_coords(*at)
+          else raise ArgumentError, 'must specify exactly one of airport: or at:'
+          end
+        end
+
+        private
+
+        def compose_for_airport(airport)
           metar = fetch_metar_or_raise(airport)
           lat, lon = AirportLocator.coordinates_from_metar(metar)
-          wfo = wrap_wfo(lat, lon)
+          build_brief(airport_id: airport.upcase, requested_lat: lat, requested_lon: lon,
+                      metar: metar, note: nil)
+        end
 
-          pirep_attempt = attempt { @pirep_source.fetch(airport, radius_nm: ADVERSE_RADIUS_NM) }
+        def compose_for_coords(req_lat, req_lon)
+          metar = @metar_source.fetch_nearest(lat: req_lat, lon: req_lon)
+          raise Skywatch::Error, "no METAR reporting station near #{req_lat},#{req_lon}" if metar.nil?
+
+          distance = Skywatch::Radar::Analysis::Proximity.distance_nm(
+            req_lat, req_lon, metar.latitude, metar.longitude
+          )
+          build_brief(airport_id: metar.station_id, requested_lat: req_lat, requested_lon: req_lon,
+                      metar: metar, note: nearest_station_note(metar.station_id, distance))
+        end
+
+        def nearest_station_note(station_id, distance_nm)
+          if distance_nm > NEAR_STATION_THRESHOLD_NM
+            "WARNING: nearest reporting station #{station_id} is #{distance_nm} nm " \
+              'from the requested point — local conditions may differ significantly'
+          else
+            "data sourced from nearest reporting station #{station_id} " \
+              "(#{distance_nm} nm from requested point)"
+          end
+        end
+
+        # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+        def build_brief(airport_id:, requested_lat:, requested_lon:, metar:, note:)
+          wfo = wrap_wfo(requested_lat, requested_lon)
+          pirep_attempt = attempt { @pirep_source.fetch(airport_id, radius_nm: ADVERSE_RADIUS_NM) }
           partitioned = AdverseFilter.partition_pireps(pirep_attempt[:value] || [])
 
           Models::Brief.new(
-            airport: airport.upcase,
-            coordinates: [lat, lon],
+            airport: airport_id,
+            coordinates: [requested_lat, requested_lon],
             wfo: wfo,
             fetched_at: Time.now.utc,
             adverse_conditions: build_adverse(
-              lat: lat, lon: lon, urgent_pireps: partitioned[:urgent], pirep_attempt: pirep_attempt
+              lat: requested_lat, lon: requested_lon,
+              urgent_pireps: partitioned[:urgent], pirep_attempt: pirep_attempt
             ),
             vfr_not_recommended: build_vfr(metar),
             current_conditions: build_current(metar: metar, pirep_attempt: pirep_attempt,
                                               informational: partitioned[:informational]),
-            destination_forecast: wrap('TAF') { build_destination(airport) },
-            winds_aloft: wrap('winds aloft') { build_winds(airport) },
-            afd: wfo.nil? ? unavailable_afd_for_no_wfo : wrap('AFD') { build_afd(wfo) }
+            destination_forecast: wrap('TAF') { build_destination(airport_id) },
+            winds_aloft: wrap('winds aloft') { build_winds(airport_id) },
+            afd: wfo.nil? ? unavailable_afd_for_no_wfo : wrap('AFD') { build_afd(wfo) },
+            note: note
           )
         end
-
-        private
+        # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
         def fetch_metar_or_raise(airport)
           metars = @metar_source.fetch(airport)

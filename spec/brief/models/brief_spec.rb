@@ -81,4 +81,27 @@ RSpec.describe Skywatch::Brief::Models::Brief do
   it 'serializes to JSON' do
     expect { JSON.parse(brief.to_json) }.not_to raise_error
   end
+
+  describe 'note (coord-query metadata)' do
+    it 'is omitted from to_h when nil (default)' do
+      expect(brief.to_h).not_to include(:note)
+    end
+
+    it 'is included in to_h when set' do
+      coord_brief = described_class.new(
+        airport: 'KCDW',
+        coordinates: [40.7, -74.2],
+        wfo: 'OKX',
+        fetched_at: Time.utc(2026, 4, 27, 18, 32, 14),
+        adverse_conditions: { available: true, items: [], partial_failures: [] },
+        vfr_not_recommended: slot_available,
+        current_conditions: slot_available,
+        destination_forecast: slot_available,
+        winds_aloft: slot_available,
+        afd: slot_available,
+        note: 'data sourced from KCDW (12.0 nm from requested point)'
+      )
+      expect(coord_brief.to_h[:note]).to eq('data sourced from KCDW (12.0 nm from requested point)')
+    end
+  end
 end

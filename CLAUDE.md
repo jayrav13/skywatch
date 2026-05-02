@@ -48,6 +48,7 @@ skywatch nimbus storms --type tornado --near 40.688,-74.174 --radius 100
 skywatch nimbus convection 40.688 -74.174
 skywatch nimbus smoke 40.688 -74.174
 skywatch brief KCDW
+skywatch brief 40.688,-74.174
 skywatch radar track UAL1234
 skywatch radar flights 37.62 -122.38
 ```

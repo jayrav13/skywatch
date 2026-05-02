@@ -143,8 +143,8 @@ module Skywatch
       Nimbus::Sources::Smoke.new.fetch(at: at)
     end
 
-    def brief(airport:)
-      Brief::Analysis::Composer.new.compose(airport: airport)
+    def brief(airport: nil, at: nil)
+      Brief::Analysis::Composer.new.compose(airport: airport, at: at)
     end
 
     def crosswind(station_id, runway_heading:)

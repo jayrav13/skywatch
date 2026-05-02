@@ -59,4 +59,42 @@ RSpec.describe Skywatch::Briefer::Sources::Metar do
       expect(metars.first.station_id).to eq('KCDW')
     end
   end
+
+  describe '#fetch_nearest' do
+    let(:requested_lat) { 40.875 }
+    let(:requested_lon) { -74.282 }
+
+    def stub_bbox(response)
+      stub_request(:get, 'https://aviationweather.gov/api/data/metar')
+        .with(query: hash_including(format: 'json'))
+        .to_return(status: 200, body: response.to_json, headers: { 'Content-Type' => 'application/json' })
+    end
+
+    it 'returns the closest METAR by great-circle distance' do
+      far = JSON.parse(File.read('spec/fixtures/metars/kewr_gusty.json')) # KEWR ~16nm from KCDW
+      near = JSON.parse(File.read('spec/fixtures/metars/kcdw.json'))      # KCDW (the requested point)
+      stub_bbox([far, near])
+
+      result = source.fetch_nearest(lat: requested_lat, lon: requested_lon)
+      expect(result.station_id).to eq('KCDW')
+    end
+
+    it 'returns nil when no stations are reported in the bbox' do
+      stub_bbox([])
+      expect(source.fetch_nearest(lat: requested_lat, lon: requested_lon)).to be_nil
+    end
+
+    it 'skips stations missing lat/lon' do
+      kcdw = JSON.parse(File.read('spec/fixtures/metars/kcdw.json')).merge('lat' => nil, 'lon' => nil)
+      stub_bbox([kcdw])
+      expect(source.fetch_nearest(lat: requested_lat, lon: requested_lon)).to be_nil
+    end
+
+    it 'sends a bbox query (not a station-id query)' do
+      stub_bbox([])
+      source.fetch_nearest(lat: requested_lat, lon: requested_lon)
+      expect(WebMock).to have_requested(:get, 'https://aviationweather.gov/api/data/metar')
+        .with(query: hash_including(:bbox, format: 'json'))
+    end
+  end
 end
