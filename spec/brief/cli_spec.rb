@@ -42,6 +42,40 @@ RSpec.describe 'skywatch brief CLI' do
       .to raise_error(SystemExit) { |e| expect(e.status).not_to eq(0) }
   end
 
+  context '--to option (route brief)' do
+    let(:route_brief) do
+      instance_double(
+        Skywatch::Brief::Models::Brief,
+        to_h: { airport: 'KCDW', destination: { airport: 'KACY' }, aim_section: '7-1-5' }
+      )
+    end
+
+    it 'passes from: and to: when --to is given' do
+      expect(Skywatch).to receive(:brief)
+        .with(from: 'KCDW', to: 'KACY', departing_at: nil)
+        .and_return(route_brief)
+      output = capture_stdout { Skywatch::CLI.start(%w[brief KCDW --to KACY]) }
+      parsed = JSON.parse(output)
+      expect(parsed['destination']['airport']).to eq('KACY')
+    end
+
+    it 'passes departing_at with --to and --departing-at' do
+      etd = Time.parse('2026-05-01T16:00:00Z')
+      expect(Skywatch).to receive(:brief)
+        .with(from: 'KCDW', to: 'KACY', departing_at: etd)
+        .and_return(route_brief)
+      capture_stdout do
+        Skywatch::CLI.start(%w[brief KCDW --to KACY --departing-at 2026-05-01T16:00:00Z])
+      end
+    end
+
+    it 'exits non-zero on ArgumentError (e.g. mixed from:/to: with at:)' do
+      allow(Skywatch).to receive(:brief).and_raise(ArgumentError, 'cannot mix from:/to: with at:')
+      expect { Skywatch::CLI.start(%w[brief KCDW --to KACY]) }
+        .to raise_error(SystemExit) { |e| expect(e.status).not_to eq(0) }
+    end
+  end
+
   context '--departing-at option' do
     let(:etd) { Time.parse('2026-05-01T16:00:00Z') }
 

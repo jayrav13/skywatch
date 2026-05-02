@@ -20,10 +20,14 @@ module Skywatch
     desc 'brief TARGET', 'AIM 7-1-5 weather brief — TARGET is an airport ID (KCDW) or coordinates (LAT,LON)'
     method_option :departing_at, type: :string, aliases: '--departing-at',
                                  desc: 'Estimated time of departure (ISO8601 or any Time.parse-able format)'
+    method_option :to, type: :string,
+                       desc: 'Destination airport ID for a route brief (e.g. KACY)'
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def brief(target)
       etd = parse_etd(options[:departing_at])
-      result = if target.include?(',')
+      result = if options[:to]
+                 Skywatch.brief(from: target, to: options[:to], departing_at: etd)
+               elsif target.include?(',')
                  lat, lon = target.split(',', 2).map { |s| Float(s.strip) }
                  Skywatch.brief(at: [lat, lon], departing_at: etd)
                else
