@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.metadata['source_code_uri'] = 'https://github.com/jayrav13/skywatch'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
-  spec.files = Dir['lib/**/*', 'exe/*', 'LICENSE.txt']
+  spec.files = Dir['lib/**/*', 'exe/*', 'agents/*.md', 'LICENSE.txt']
   spec.bindir = 'exe'
   spec.executables = ['skywatch']
   spec.require_paths = ['lib']

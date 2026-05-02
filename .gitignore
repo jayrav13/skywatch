@@ -3,6 +3,7 @@
 /pkg/
 /.worktrees/
 .claude/pending-questions.md
+.claude/scheduled_tasks.lock
 Gemfile.lock
 *.gem
 .rspec_status

@@ -49,6 +49,8 @@ skywatch nimbus convection 40.688 -74.174
 skywatch nimbus smoke 40.688 -74.174
 skywatch brief KCDW
 skywatch brief 40.688,-74.174
+skywatch brief KCDW --to KACY --departing-at "2026-05-02T13:00:00-04:00"
+skywatch agent install
 skywatch radar track UAL1234
 skywatch radar flights 37.62 -122.38
 ```
