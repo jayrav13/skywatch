@@ -17,6 +17,9 @@ module Skywatch
     desc 'nimbus SUBCOMMAND', 'SPC convective outlooks and storm reports'
     subcommand 'nimbus', Skywatch::Nimbus::CLI
 
+    desc 'agent SUBCOMMAND', 'Manage the skywatch Claude Code subagent'
+    subcommand 'agent', Skywatch::Agent::CLI
+
     desc 'brief TARGET', 'AIM 7-1-5 weather brief — TARGET is an airport ID (KCDW) or coordinates (LAT,LON)'
     method_option :departing_at, type: :string, aliases: '--departing-at',
                                  desc: 'Estimated time of departure (ISO8601 or any Time.parse-able format)'
