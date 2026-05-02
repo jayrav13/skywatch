@@ -183,4 +183,54 @@ RSpec.describe Skywatch::Brief::Analysis::Composer do
       expect { composer.compose(airport: 'KZZZ') }.to raise_error(Skywatch::ApiError)
     end
   end
+
+  context 'coordinate input' do
+    it 'requires exactly one of airport: or at:' do
+      expect { composer.compose }.to raise_error(ArgumentError, /airport|at/)
+      expect { composer.compose(airport: 'KCDW', at: [40.0, -74.0]) }
+        .to raise_error(ArgumentError, /airport|at/)
+    end
+
+    it 'composes a brief from the nearest reporting station when at: is given' do
+      allow(metar_source).to receive(:fetch_nearest)
+        .with(lat: 40.875, lon: -74.282).and_return(metar)
+      brief = composer.compose(at: [40.875, -74.282])
+      expect(brief.airport).to eq('KCDW')
+      expect(brief.coordinates).to eq([40.875, -74.282])
+      expect(brief.note).to include('KCDW')
+    end
+
+    it 'flags the note when nearest station is more than 25 nm away' do
+      far_metar = Skywatch::Briefer::Models::Metar.new(
+        station_id: 'KFAR', latitude: 41.5, longitude: -75.0,
+        visibility_sm: 10, sky_condition: [{ cover: :few, base_ft: 5000 }]
+      )
+      allow(metar_source).to receive(:fetch_nearest).and_return(far_metar)
+      brief = composer.compose(at: [40.5, -74.0])
+      expect(brief.note).to match(/nearest reporting station/i)
+      expect(brief.note).to match(/\d+(\.\d+)?\s*nm/)
+    end
+
+    it 'raises when no METAR is reported within the search bbox' do
+      allow(metar_source).to receive(:fetch_nearest).and_return(nil)
+      expect { composer.compose(at: [60.0, -150.0]) }
+        .to raise_error(Skywatch::Error, /no METAR/i)
+    end
+
+    it 'uses requested coordinates (not station coordinates) for adverse-conditions polygon checks' do
+      # Sigmet polygon contains the requested point (40.5,-74.5) but NOT the station (40.875,-74.282)
+      allow(metar_source).to receive(:fetch_nearest).and_return(metar)
+      sigmet_at_request = Skywatch::Briefer::Models::Sigmet.new(coords: [
+                                                                  Skywatch::Shared::Position.new(lat: 40.6, lon: -75.5),
+                                                                  Skywatch::Shared::Position.new(lat: 40.6, lon: -73.5),
+                                                                  Skywatch::Shared::Position.new(lat: 39.5, lon: -73.5),
+                                                                  Skywatch::Shared::Position.new(lat: 39.5, lon: -75.5),
+                                                                  Skywatch::Shared::Position.new(lat: 40.6, lon: -75.5)
+                                                                ])
+      allow(sigmet_source).to receive(:fetch).and_return([sigmet_at_request])
+      brief = composer.compose(at: [40.5, -74.5])
+      kinds = brief.adverse_conditions[:items].map { |i| i[:kind] }
+      expect(kinds).to include('sigmet')
+    end
+  end
 end

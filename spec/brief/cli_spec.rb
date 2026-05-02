@@ -26,6 +26,22 @@ RSpec.describe 'skywatch brief CLI' do
     end
   end
 
+  it 'parses LAT,LON target into a coordinate brief' do
+    coord_brief = instance_double(
+      Skywatch::Brief::Models::Brief,
+      to_h: { airport: 'KCDW', coordinates: [40.688, -74.174], aim_section: '7-1-5' }
+    )
+    allow(Skywatch).to receive(:brief).with(at: [40.688, -74.174]).and_return(coord_brief)
+    output = capture_stdout { Skywatch::CLI.start(['brief', '40.688,-74.174']) }
+    parsed = JSON.parse(output)
+    expect(parsed['coordinates']).to eq([40.688, -74.174])
+  end
+
+  it 'exits non-zero when LAT,LON cannot be parsed as floats' do
+    expect { Skywatch::CLI.start(['brief', '40.688,not-a-number']) }
+      .to raise_error(SystemExit) { |e| expect(e.status).not_to eq(0) }
+  end
+
   def capture_stdout
     old = $stdout
     $stdout = StringIO.new
