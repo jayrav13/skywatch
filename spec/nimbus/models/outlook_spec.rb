@@ -93,6 +93,20 @@ RSpec.describe Skywatch::Nimbus::Models::Outlook do
       expect(mrgl.covers?(lat: 41.4, lon: -74.9)).to be(true)
       expect(slgt.covers?(lat: 41.4, lon: -74.9)).to be(false)
     end
+
+    it 'returns false when the geometry is self-intersecting (RGeo InvalidGeometry)' do
+      factory = described_class::FACTORY
+      bowtie_ring = factory.linear_ring([
+                                          factory.point(-74.0, 40.0),
+                                          factory.point(-73.0, 41.0),
+                                          factory.point(-73.0, 40.0),
+                                          factory.point(-74.0, 41.0),
+                                          factory.point(-74.0, 40.0)
+                                        ])
+      bad = described_class.new(**attrs, geometry: factory.polygon(bowtie_ring))
+      expect { bad.covers?(lat: 40.5, lon: -73.5) }.not_to raise_error
+      expect(bad.covers?(lat: 40.5, lon: -73.5)).to be(false)
+    end
   end
 
   describe '#to_h' do

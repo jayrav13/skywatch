@@ -70,6 +70,8 @@ module Skywatch
           return false if geometry.nil?
 
           geometry.contains?(FACTORY.point(lon, lat))
+        rescue RGeo::Error::InvalidGeometry
+          false
         end
 
         def to_h # rubocop:disable Metrics/MethodLength
