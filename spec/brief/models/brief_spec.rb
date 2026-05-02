@@ -104,4 +104,34 @@ RSpec.describe Skywatch::Brief::Models::Brief do
       expect(coord_brief.to_h[:note]).to eq('data sourced from KCDW (12.0 nm from requested point)')
     end
   end
+
+  describe 'departing_at' do
+    it 'is nil by default' do
+      expect(brief.departing_at).to be_nil
+    end
+
+    it 'is always present in to_h (even when nil)' do
+      expect(brief.to_h).to include(:departing_at)
+      expect(brief.to_h[:departing_at]).to be_nil
+    end
+
+    it 'serializes as ISO8601 string when set' do
+      etd = Time.utc(2026, 5, 1, 14, 30, 0)
+      etd_brief = described_class.new(
+        airport: 'KCDW',
+        coordinates: [40.875, -74.282],
+        wfo: 'OKX',
+        fetched_at: Time.utc(2026, 5, 1, 12, 0, 0),
+        adverse_conditions: { available: true, items: [], partial_failures: [] },
+        vfr_not_recommended: slot_available,
+        current_conditions: slot_available,
+        destination_forecast: slot_available,
+        winds_aloft: slot_available,
+        afd: slot_available,
+        departing_at: etd
+      )
+      expect(etd_brief.departing_at).to eq(etd)
+      expect(etd_brief.to_h[:departing_at]).to eq('2026-05-01T14:30:00Z')
+    end
+  end
 end

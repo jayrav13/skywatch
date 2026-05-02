@@ -184,6 +184,110 @@ RSpec.describe Skywatch::Brief::Analysis::Composer do
     end
   end
 
+  context 'departing_at (ETD) support' do
+    let(:now) { Time.utc(2026, 5, 1, 12, 0, 0) }
+
+    let(:group_now) do
+      Skywatch::Briefer::Models::TafGroup.new(
+        time_from: Time.utc(2026, 5, 1, 12, 0, 0),
+        time_to: Time.utc(2026, 5, 1, 15, 0, 0),
+        change_type: :initial, wind_direction_deg: 270, wind_speed_kt: 10,
+        visibility_sm: 10, sky_condition: []
+      )
+    end
+
+    let(:group_etd) do
+      Skywatch::Briefer::Models::TafGroup.new(
+        time_from: Time.utc(2026, 5, 1, 15, 0, 0),
+        time_to: Time.utc(2026, 5, 1, 18, 0, 0),
+        change_type: :fm, wind_direction_deg: 180, wind_speed_kt: 15,
+        visibility_sm: 5, sky_condition: []
+      )
+    end
+
+    let(:taf) do
+      Skywatch::Briefer::Models::Taf.new(
+        station_id: 'KCDW', raw: 'TAF KCDW ...', issued_at: Time.utc(2026, 5, 1, 11, 0, 0),
+        valid_from: Time.utc(2026, 5, 1, 12, 0, 0), valid_to: Time.utc(2026, 5, 2, 12, 0, 0),
+        forecast_groups: [group_now, group_etd]
+      )
+    end
+
+    let(:winds_forecast) do
+      Skywatch::Briefer::Models::WindsAloft.new(
+        station_id: 'KCDW', altitude_ft: 6000, wind_direction_deg: 270,
+        wind_speed_kt: 25, temperature_c: 5
+      )
+    end
+
+    before do
+      allow(taf_source).to receive(:fetch).and_return([taf])
+    end
+
+    it 'sets departing_at on the returned brief' do
+      etd = Time.utc(2026, 5, 1, 16, 0, 0)
+      brief = composer.compose(airport: 'KCDW', departing_at: etd)
+      expect(brief.departing_at).to eq(etd)
+    end
+
+    it 'selects the TAF group active at ETD for destination_forecast' do
+      etd = Time.utc(2026, 5, 1, 16, 0, 0) # falls in group_etd window
+      brief = composer.compose(airport: 'KCDW', departing_at: etd)
+      slot = brief.destination_forecast
+      expect(slot[:available]).to be true
+      # group_etd has wind_direction_deg 180
+      expect(slot[:taf][:forecast_groups].first[:wind_direction_deg]).to eq(180)
+    end
+
+    it 'falls back to first TAF group with a note when ETD is outside valid window' do
+      etd = Time.utc(2026, 5, 3, 0, 0, 0) # beyond valid_to
+      brief = composer.compose(airport: 'KCDW', departing_at: etd)
+      slot = brief.destination_forecast
+      expect(slot[:available]).to be true
+      expect(slot[:note]).to match(/ETD outside TAF valid window/)
+      # fallback = first group = group_now with wind_direction_deg 270
+      expect(slot[:taf][:forecast_groups].first[:wind_direction_deg]).to eq(270)
+    end
+
+    it 'uses fcst 06 when ETD is within 6 hours' do
+      etd = now + (3 * 3600) # 3 hours from now
+      expect(winds_source).to receive(:fetch).with('KCDW', fcst: '06').and_return([winds_forecast])
+      composer.compose(airport: 'KCDW', departing_at: etd)
+    end
+
+    it 'uses fcst 12 when ETD is 6-18 hours away' do
+      etd = now + (10 * 3600)  # 10 hours from now
+      expect(winds_source).to receive(:fetch).with('KCDW', fcst: '12').and_return([winds_forecast])
+      allow(Time).to receive(:now).and_return(now)
+      composer.compose(airport: 'KCDW', departing_at: etd)
+    end
+
+    it 'uses fcst 24 when ETD is more than 18 hours away' do
+      etd = now + (20 * 3600)  # 20 hours from now
+      expect(winds_source).to receive(:fetch).with('KCDW', fcst: '24').and_return([winds_forecast])
+      allow(Time).to receive(:now).and_return(now)
+      composer.compose(airport: 'KCDW', departing_at: etd)
+    end
+
+    it 'uses default fcst 06 when no ETD is given' do
+      expect(winds_source).to receive(:fetch).with('KCDW', fcst: '06').and_return([winds_forecast])
+      composer.compose(airport: 'KCDW')
+    end
+
+    it 'departing_at is nil on brief when not given' do
+      brief = composer.compose(airport: 'KCDW')
+      expect(brief.departing_at).to be_nil
+    end
+
+    it 'works with coordinate input too' do
+      etd = Time.utc(2026, 5, 1, 16, 0, 0)
+      allow(metar_source).to receive(:fetch_nearest)
+        .with(lat: 40.875, lon: -74.282).and_return(metar)
+      brief = composer.compose(at: [40.875, -74.282], departing_at: etd)
+      expect(brief.departing_at).to eq(etd)
+    end
+  end
+
   context 'coordinate input' do
     it 'requires exactly one of airport: or at:' do
       expect { composer.compose }.to raise_error(ArgumentError, /airport|at/)

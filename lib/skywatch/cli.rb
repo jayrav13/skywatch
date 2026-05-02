@@ -18,22 +18,38 @@ module Skywatch
     subcommand 'nimbus', Skywatch::Nimbus::CLI
 
     desc 'brief TARGET', 'AIM 7-1-5 weather brief — TARGET is an airport ID (KCDW) or coordinates (LAT,LON)'
+    method_option :departing_at, type: :string, aliases: '--departing-at',
+                                 desc: 'Estimated time of departure (ISO8601 or any Time.parse-able format)'
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def brief(target)
+      etd = parse_etd(options[:departing_at])
       result = if target.include?(',')
                  lat, lon = target.split(',', 2).map { |s| Float(s.strip) }
-                 Skywatch.brief(at: [lat, lon])
+                 Skywatch.brief(at: [lat, lon], departing_at: etd)
                else
-                 Skywatch.brief(airport: target)
+                 Skywatch.brief(airport: target, departing_at: etd)
                end
       puts JSON.pretty_generate(result.to_h)
     rescue ArgumentError, Skywatch::Error => e
       warn "Error: #{e.message}"
       exit 1
     end
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     desc 'version', 'Print version'
     def version
       puts "skywatch #{Skywatch::VERSION}"
+    end
+
+    private
+
+    def parse_etd(raw)
+      return nil if raw.nil?
+
+      Time.parse(raw)
+    rescue ArgumentError
+      warn "Error: cannot parse --departing-at value: #{raw.inspect}"
+      exit 1
     end
   end
 end

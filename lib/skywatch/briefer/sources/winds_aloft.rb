@@ -23,8 +23,8 @@ module Skywatch
           @client = client
         end
 
-        def fetch(station_id, altitude_ft: nil)
-          body = @client.get_raw(ENDPOINT, { region: 'all', level: 'low', fcst: '06', format: 'json' }, ttl: TTL)
+        def fetch(station_id, altitude_ft: nil, fcst: '06')
+          body = @client.get_raw(ENDPOINT, { region: 'all', level: 'low', fcst: fcst, format: 'json' }, ttl: TTL)
           line = find_station_line(body, station_id)
           return [] unless line
 
