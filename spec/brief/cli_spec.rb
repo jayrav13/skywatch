@@ -10,7 +10,7 @@ RSpec.describe 'skywatch brief CLI' do
     )
   end
 
-  before { allow(Skywatch).to receive(:brief).with(airport: 'KCDW').and_return(brief) }
+  before { allow(Skywatch).to receive(:brief).with(airport: 'KCDW', departing_at: nil).and_return(brief) }
 
   it 'prints the brief as JSON' do
     output = capture_stdout { Skywatch::CLI.start(%w[brief KCDW]) }
@@ -31,7 +31,7 @@ RSpec.describe 'skywatch brief CLI' do
       Skywatch::Brief::Models::Brief,
       to_h: { airport: 'KCDW', coordinates: [40.688, -74.174], aim_section: '7-1-5' }
     )
-    allow(Skywatch).to receive(:brief).with(at: [40.688, -74.174]).and_return(coord_brief)
+    allow(Skywatch).to receive(:brief).with(at: [40.688, -74.174], departing_at: nil).and_return(coord_brief)
     output = capture_stdout { Skywatch::CLI.start(['brief', '40.688,-74.174']) }
     parsed = JSON.parse(output)
     expect(parsed['coordinates']).to eq([40.688, -74.174])
@@ -40,6 +40,35 @@ RSpec.describe 'skywatch brief CLI' do
   it 'exits non-zero when LAT,LON cannot be parsed as floats' do
     expect { Skywatch::CLI.start(['brief', '40.688,not-a-number']) }
       .to raise_error(SystemExit) { |e| expect(e.status).not_to eq(0) }
+  end
+
+  context '--departing-at option' do
+    let(:etd) { Time.parse('2026-05-01T16:00:00Z') }
+
+    it 'passes departing_at to Skywatch.brief when --departing-at is given' do
+      expect(Skywatch).to receive(:brief)
+        .with(airport: 'KCDW', departing_at: etd)
+        .and_return(brief)
+      capture_stdout { Skywatch::CLI.start(['brief', 'KCDW', '--departing-at', '2026-05-01T16:00:00Z']) }
+    end
+
+    it 'passes departing_at with coordinate input' do
+      coord_brief = instance_double(
+        Skywatch::Brief::Models::Brief,
+        to_h: { airport: 'KCDW', coordinates: [40.688, -74.174], aim_section: '7-1-5' }
+      )
+      expect(Skywatch).to receive(:brief)
+        .with(at: [40.688, -74.174], departing_at: etd)
+        .and_return(coord_brief)
+      capture_stdout do
+        Skywatch::CLI.start(['brief', '40.688,-74.174', '--departing-at', '2026-05-01T16:00:00Z'])
+      end
+    end
+
+    it 'exits non-zero when --departing-at cannot be parsed' do
+      expect { Skywatch::CLI.start(['brief', 'KCDW', '--departing-at', 'not-a-time']) }
+        .to raise_error(SystemExit) { |e| expect(e.status).not_to eq(0) }
+    end
   end
 
   def capture_stdout

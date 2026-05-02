@@ -34,24 +34,24 @@ module Skywatch
         end
         # rubocop:enable Metrics/ParameterLists
 
-        def compose(airport: nil, at: nil)
+        def compose(airport: nil, at: nil, departing_at: nil)
           case [airport.nil?, at.nil?]
-          when [false, true] then compose_for_airport(airport)
-          when [true, false] then compose_for_coords(*at)
+          when [false, true] then compose_for_airport(airport, departing_at: departing_at)
+          when [true, false] then compose_for_coords(*at, departing_at: departing_at)
           else raise ArgumentError, 'must specify exactly one of airport: or at:'
           end
         end
 
         private
 
-        def compose_for_airport(airport)
+        def compose_for_airport(airport, departing_at: nil)
           metar = fetch_metar_or_raise(airport)
           lat, lon = AirportLocator.coordinates_from_metar(metar)
           build_brief(airport_id: airport.upcase, requested_lat: lat, requested_lon: lon,
-                      metar: metar, note: nil)
+                      metar: metar, note: nil, departing_at: departing_at)
         end
 
-        def compose_for_coords(req_lat, req_lon)
+        def compose_for_coords(req_lat, req_lon, departing_at: nil)
           metar = @metar_source.fetch_nearest(lat: req_lat, lon: req_lon)
           raise Skywatch::Error, "no METAR reporting station near #{req_lat},#{req_lon}" if metar.nil?
 
@@ -59,7 +59,8 @@ module Skywatch
             req_lat, req_lon, metar.latitude, metar.longitude
           )
           build_brief(airport_id: metar.station_id, requested_lat: req_lat, requested_lon: req_lon,
-                      metar: metar, note: nearest_station_note(metar.station_id, distance))
+                      metar: metar, note: nearest_station_note(metar.station_id, distance),
+                      departing_at: departing_at)
         end
 
         def nearest_station_note(station_id, distance_nm)
@@ -72,17 +73,19 @@ module Skywatch
           end
         end
 
-        # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-        def build_brief(airport_id:, requested_lat:, requested_lon:, metar:, note:)
+        # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/ParameterLists
+        def build_brief(airport_id:, requested_lat:, requested_lon:, metar:, note:, departing_at: nil)
           wfo = wrap_wfo(requested_lat, requested_lon)
           pirep_attempt = attempt { @pirep_source.fetch(airport_id, radius_nm: ADVERSE_RADIUS_NM) }
           partitioned = AdverseFilter.partition_pireps(pirep_attempt[:value] || [])
+          fcst = winds_fcst_for(departing_at)
 
           Models::Brief.new(
             airport: airport_id,
             coordinates: [requested_lat, requested_lon],
             wfo: wfo,
             fetched_at: Time.now.utc,
+            departing_at: departing_at,
             adverse_conditions: build_adverse(
               lat: requested_lat, lon: requested_lon,
               urgent_pireps: partitioned[:urgent], pirep_attempt: pirep_attempt
@@ -90,13 +93,13 @@ module Skywatch
             vfr_not_recommended: build_vfr(metar),
             current_conditions: build_current(metar: metar, pirep_attempt: pirep_attempt,
                                               informational: partitioned[:informational]),
-            destination_forecast: wrap('TAF') { build_destination(airport_id) },
-            winds_aloft: wrap('winds aloft') { build_winds(airport_id) },
+            destination_forecast: wrap('TAF') { build_destination(airport_id, departing_at: departing_at) },
+            winds_aloft: wrap('winds aloft') { build_winds(airport_id, fcst: fcst) },
             afd: wfo.nil? ? unavailable_afd_for_no_wfo : wrap('AFD') { build_afd(wfo) },
             note: note
           )
         end
-        # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+        # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/ParameterLists
 
         def fetch_metar_or_raise(airport)
           metars = @metar_source.fetch(airport)
@@ -198,17 +201,62 @@ module Skywatch
           end
         end
 
-        def build_destination(airport)
+        # rubocop:disable Metrics/MethodLength
+        def build_destination(airport, departing_at: nil)
           tafs = @taf_source.fetch(airport)
-          if tafs.empty?
-            { available: false, reason: "no TAF for #{airport.upcase}" }
+          return { available: false, reason: "no TAF for #{airport.upcase}" } if tafs.empty?
+
+          taf = tafs.first
+          if departing_at
+            group = taf.group_at(departing_at)
+            if group
+              etd_taf = taf_with_single_group(taf, group)
+              return { available: true, taf: etd_taf.to_h }
+            else
+              return {
+                available: true,
+                taf: taf_with_single_group(taf, taf.forecast_groups.first).to_h,
+                note: 'ETD outside TAF valid window; showing initial group'
+              }
+            end
+          end
+
+          { available: true, taf: taf.to_h }
+        end
+        # rubocop:enable Metrics/MethodLength
+
+        # rubocop:disable Metrics/MethodLength
+        def taf_with_single_group(taf, group)
+          Skywatch::Briefer::Models::Taf.new(
+            station_id: taf.station_id,
+            raw: taf.raw,
+            issued_at: taf.issued_at,
+            valid_from: taf.valid_from,
+            valid_to: taf.valid_to,
+            station_name: taf.station_name,
+            latitude: taf.latitude,
+            longitude: taf.longitude,
+            elevation_ft: taf.elevation_ft,
+            forecast_groups: [group]
+          )
+        end
+        # rubocop:enable Metrics/MethodLength
+
+        def winds_fcst_for(departing_at)
+          return '06' if departing_at.nil?
+
+          hours = (departing_at - Time.now) / 3600.0
+          if hours <= 6
+            '06'
+          elsif hours <= 18
+            '12'
           else
-            { available: true, taf: tafs.first.to_h }
+            '24'
           end
         end
 
-        def build_winds(airport)
-          forecasts = @winds_source.fetch(airport)
+        def build_winds(airport, fcst: '06')
+          forecasts = @winds_source.fetch(airport, fcst: fcst)
           if forecasts.empty?
             { available: false, reason: "no winds aloft for #{airport.upcase}" }
           else

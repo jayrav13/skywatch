@@ -31,13 +31,14 @@ module Skywatch
 
         attr_reader :airport, :coordinates, :wfo, :fetched_at,
                     :adverse_conditions, :vfr_not_recommended,
-                    :current_conditions, :destination_forecast, :winds_aloft, :afd, :note
+                    :current_conditions, :destination_forecast, :winds_aloft, :afd, :note,
+                    :departing_at
 
         # rubocop:disable Metrics/ParameterLists, Metrics/MethodLength
         def initialize(airport:, coordinates:, wfo:, fetched_at:,
                        adverse_conditions:, vfr_not_recommended:,
                        current_conditions:, destination_forecast:, winds_aloft:, afd:,
-                       note: nil)
+                       note: nil, departing_at: nil)
           @airport = airport
           @coordinates = coordinates
           @wfo = wfo
@@ -49,6 +50,7 @@ module Skywatch
           @winds_aloft = winds_aloft
           @afd = afd
           @note = note
+          @departing_at = departing_at
         end
         # rubocop:enable Metrics/ParameterLists, Metrics/MethodLength
 
@@ -59,6 +61,7 @@ module Skywatch
             coordinates: coordinates,
             wfo: wfo,
             fetched_at: fetched_at&.iso8601,
+            departing_at: departing_at&.iso8601,
             aim_section: AIM_SECTION,
             adverse_conditions: adverse_conditions,
             vfr_not_recommended: vfr_not_recommended,
