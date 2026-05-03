@@ -1,6 +1,6 @@
 # Skywatch
 
-Aviation situational awareness toolkit. Real-time aviation weather, flight tracking, and situational awareness from public FAA/NWS/ADS-B data. For end-user documentation, visit https://jayrav13.github.io/skywatch (site coming soon).
+Aviation situational awareness toolkit. Real-time aviation weather, flight tracking, and situational awareness from public FAA/NWS/ADS-B data. For end-user documentation, visit https://jayravaliya.com/skywatch.
 
 ## Requirements
 
