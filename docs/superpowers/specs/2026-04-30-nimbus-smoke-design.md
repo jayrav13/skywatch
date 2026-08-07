@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-30
 **Domain:** `Skywatch::Nimbus`
-**Decomposition reference:** [Nimbus is being shipped as multiple PRs](../../../.claude/projects/-Users-jravaliya-Code-skywatch/memory/project_nimbus_decomposition.md) — this is PR 3 (smoke plumes only; AQI deferred to [#13](https://github.com/jayrav13/skywatch/issues/13), fires deferred to [#14](https://github.com/jayrav13/skywatch/issues/14)).
+**Decomposition reference:** Nimbus is being shipped as multiple PRs — this is PR 3 (smoke plumes only; AQI deferred to [#13](https://github.com/jayrav13/skywatch/issues/13), fires deferred to [#14](https://github.com/jayrav13/skywatch/issues/14)).
 **Predecessors merged:** Nimbus PR 1 (outlook + storms — GH #3), Nimbus PR 2 (convection — GH #4).
 
 ## Goal

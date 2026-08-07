@@ -1,3 +1,0 @@
-- [User Profile](user_profile.md) — Pilot/aviation enthusiast building skywatch multi-agent system
-- [Skywatch Architecture](project_skywatch.md) — Multi-agent aviation awareness system with 7 subagent gems + tracon orchestrator
-- [Briefer Status](project_briefer_status.md) — Briefer gem progress: Phases 1-2 complete, mid-Phase 3
