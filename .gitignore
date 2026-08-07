@@ -4,6 +4,7 @@
 /.worktrees/
 .claude/pending-questions.md
 .claude/scheduled_tasks.lock
+.claude/projects/
 Gemfile.lock
 *.gem
 .rspec_status
